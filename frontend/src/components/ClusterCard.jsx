@@ -132,12 +132,12 @@ function NodeGroupsSection({ nodeGroups }) {
                           </span>
                           {allReady && (
                             <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 10, fontWeight: 600, background: "var(--color-background-success)", color: "var(--color-text-success)", flexShrink: 0 }}>
-                              ✓ {readyCount}/{instances.length}
+                              Ready
                             </span>
                           )}
                           {someNotReady && (
                             <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 10, fontWeight: 600, background: "var(--color-background-danger)", color: "var(--color-text-danger)", flexShrink: 0 }}>
-                              ✗ {readyCount}/{instances.length}
+                              Not Ready
                             </span>
                           )}
                         </div>
@@ -244,13 +244,11 @@ const TAB_KEYS = [
 
 export function ClusterCard({ cluster, addons, addonsLoading }) {
   const { t } = useLanguage();
-  const [showUpgradePath, setShowUpgradePath] = useState(false);
   const [activeTab, setActiveTab] = useState("addons");
   const days = cluster.eol_days_remaining;
   const eolBadgeColor = days < 60 ? "var(--color-text-danger)" : days < 180 ? "var(--color-text-warning)" : "var(--color-text-success)";
   const eolBadgeBg   = days < 60 ? "var(--color-background-danger)" : days < 180 ? "var(--color-background-warning)" : "var(--color-background-success)";
   const eolLabel = days < 60 ? `EOL em ${days} dias` : `EOL em ${Math.round(days / 30)} meses`;
-  const hasUpgradePath = cluster.upgrade_path && cluster.upgrade_path.length > 0;
 
   return (
     <div style={{ background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)", padding: "1.25rem", marginBottom: "1rem" }}>
@@ -262,12 +260,6 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 11, padding: "3px 10px", borderRadius: 20, fontWeight: 500, background: eolBadgeBg, color: eolBadgeColor }}>{eolLabel}</span>
-          {hasUpgradePath && (
-            <button onClick={() => setShowUpgradePath(v => !v)}
-              style={{ fontSize: 11, padding: "3px 10px", borderRadius: 20, fontWeight: 500, background: "var(--color-background-info)", color: "var(--color-text-info)", border: "none", cursor: "pointer" }}>
-              {showUpgradePath ? t("hideUpgrade") : t("simulateUpgrade")}
-            </button>
-          )}
         </div>
       </div>
 
@@ -282,6 +274,7 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
       </div>
 
       <EolBar cluster={cluster} />
+      <UpgradePath cluster={cluster} />
 
       <div style={{ display: "flex", borderBottom: "1px solid var(--color-border-tertiary)", marginBottom: "1rem" }}>
         {TAB_KEYS.map(tab => (
@@ -304,8 +297,6 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
       {activeTab === "nos" && <NodeGroupsSection nodeGroups={cluster.node_groups} />}
       {activeTab === "eventos" && <EventsPanel />}
       {activeTab === "monitor" && <MonitorPanel />}
-
-      {showUpgradePath && <UpgradePath cluster={cluster} />}
     </div>
   );
 }
