@@ -1,35 +1,26 @@
-import { useState } from "react";
-import { uploadKubeconfig, fetchClusterInfo } from "../api/client";
+import { useState, useEffect } from "react";
+import { fetchClusterInfo } from "../api/client";
 
-export function useCluster() {
+export function useCluster(enabled = true) {
   const [cluster, setCluster] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  async function upload(file) {
+  useEffect(() => {
+    if (!enabled) return;
     setLoading(true);
-    setError(null);
-    try {
-      const data = await uploadKubeconfig(file);
-      setCluster(data);
-    } catch (e) {
-      setError(e.response?.data?.detail || "Erro ao carregar o kubeconfig.");
-    } finally {
-      setLoading(false);
-    }
-  }
+    fetchClusterInfo()
+      .then(setCluster)
+      .catch(() => setError("Erro ao carregar cluster"))
+      .finally(() => setLoading(false));
+  }, [enabled]);
 
   async function refresh() {
     setLoading(true);
-    try {
-      const data = await fetchClusterInfo();
-      setCluster(data);
-    } catch (e) {
-      setError(e.response?.data?.detail || "Erro ao atualizar.");
-    } finally {
-      setLoading(false);
-    }
+    try { setCluster(await fetchClusterInfo()); }
+    catch { setError("Erro ao atualizar."); }
+    finally { setLoading(false); }
   }
 
-  return { cluster, loading, error, upload, refresh };
+  return { cluster, loading, error, refresh };
 }

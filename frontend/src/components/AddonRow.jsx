@@ -37,7 +37,7 @@ export function AddonRow({ addon }) {
               color: "var(--color-text-tertiary)", display: "flex", alignItems: "center",
             }}
           >
-            <span style={{ display: "inline-block", transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "rotate(0deg)", fontSize: 14 }}>
+            <span style={{ display: "inline-block", transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "rotate(0deg)", fontSize: 18 }}>
               ▾
             </span>
           </button>

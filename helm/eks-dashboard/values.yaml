@@ -87,6 +87,11 @@ affinity: {}
 clusterName: ""
 awsRegion: "us-east-1"
 
+# Credenciais de acesso ao dashboard
+auth:
+  username: "admin"
+  password: "admin"
+
 extraEnv: []
   # - name: AWS_DEFAULT_REGION
   #   value: us-east-1

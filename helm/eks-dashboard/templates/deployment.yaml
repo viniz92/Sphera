@@ -53,6 +53,10 @@ spec:
               value: {{ .Values.clusterName | quote }}
             - name: AWS_DEFAULT_REGION
               value: {{ .Values.awsRegion | quote }}
+            - name: PALANTIR_USERNAME
+              value: {{ .Values.auth.username | quote }}
+            - name: PALANTIR_PASSWORD
+              value: {{ .Values.auth.password | quote }}
             {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

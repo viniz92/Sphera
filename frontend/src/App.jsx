@@ -1,44 +1,69 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCluster } from "./hooks/useCluster";
 import { useAddons } from "./hooks/useAddons";
-import { UploadKubeconfig } from "./components/UploadKubeconfig";
 import { ClusterCard } from "./components/ClusterCard";
+import { LoginPage } from "./components/LoginPage";
 import { Logo } from "./components/Logo";
 
-export default function App() {
-  const { cluster, loading, error, upload } = useCluster();
-  const { addons, loading: addonsLoading } = useAddons(!!cluster);
-  const [reset, setReset] = useState(false);
+function useTheme() {
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "dark");
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+  return [theme, () => setTheme(t => t === "dark" ? "light" : "dark")];
+}
 
-  function handleReset() {
-    window.location.reload();
+export default function App() {
+  const [token, setToken] = useState(() => localStorage.getItem("palantir_token") || "");
+  const { cluster, loading, error } = useCluster(!!token);
+  const { addons, loading: addonsLoading } = useAddons(!!cluster);
+  const [theme, toggleTheme] = useTheme();
+
+  useEffect(() => {
+    function onLogout() { setToken(""); }
+    window.addEventListener("palantir:logout", onLogout);
+    return () => window.removeEventListener("palantir:logout", onLogout);
+  }, []);
+
+  function handleLogin(newToken) { setToken(newToken); }
+
+  function handleLogout() {
+    localStorage.removeItem("palantir_token");
+    setToken("");
   }
 
-  if (!cluster || reset) {
+  if (!token) return <LoginPage onLogin={handleLogin} />;
+
+  if (loading) {
     return (
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 1rem" }}>
-        <UploadKubeconfig onUpload={upload} loading={loading} error={error} />
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "60vh", color: "var(--color-text-secondary)" }}>
+        Conectando ao cluster...
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 1rem" }}>
+    <div style={{ padding: "0 2rem" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.5rem 0 1rem" }}>
-        <Logo size={36} showName />
-        <button
-          onClick={handleReset}
-          style={{ fontSize: 12, padding: "4px 12px", borderRadius: "var(--border-radius-md)", border: "0.5px solid var(--color-border-secondary)", background: "none", cursor: "pointer", color: "var(--color-text-secondary)" }}
-        >
-          Trocar cluster
-        </button>
+        <Logo size={32} showName />
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button
+            onClick={toggleTheme}
+            title={theme === "dark" ? "Tema claro" : "Tema escuro"}
+            style={{ background: "none", border: "0.5px solid var(--color-border-secondary)", color: "var(--color-text-secondary)", borderRadius: "var(--border-radius-md)", padding: "4px 8px", fontSize: 14, lineHeight: 1 }}
+          >
+            {theme === "dark" ? "☀" : "☾"}
+          </button>
+          <button
+            onClick={handleLogout}
+            style={{ background: "none", border: "0.5px solid var(--color-border-secondary)", color: "var(--color-text-secondary)", borderRadius: "var(--border-radius-md)", padding: "4px 10px", fontSize: 12 }}
+          >
+            Sair
+          </button>
+        </div>
       </div>
-      <ClusterCard
-        cluster={cluster}
-        addons={addons}
-        addonsLoading={addonsLoading}
-        onReset={handleReset}
-      />
+      <ClusterCard cluster={cluster} addons={addons} addonsLoading={addonsLoading} />
     </div>
   );
 }
