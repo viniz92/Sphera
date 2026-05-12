@@ -34,22 +34,29 @@ export function UpgradePath({ cluster }) {
                   Upgrade para v{step.version}
                 </div>
 
-                {hasActions && (
-                  <div style={{ background: "var(--color-background-secondary)", borderRadius: "var(--border-radius-md)", padding: "8px 10px", display: "flex", flexDirection: "column", gap: 4 }}>
-                    <div style={{ fontSize: 11, color: "var(--color-text-tertiary)", marginBottom: 2 }}>Antes de atualizar o control plane:</div>
-                    {step.addons_to_update.map((a) => (
-                      <div key={a.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12 }}>
-                        <span style={{ fontWeight: 500 }}>{a.name}</span>
-                        <span style={{ color: "var(--color-text-tertiary)" }}>
-                          {a.current_version} →{" "}
-                          <span style={{ color: a.action_type === "danger" ? "var(--color-text-danger)" : "var(--color-text-warning)", fontWeight: 500 }}>
-                            {a.required_version}
+                <div style={{ background: "var(--color-background-secondary)", borderRadius: "var(--border-radius-md)", padding: "8px 10px", display: "flex", flexDirection: "column", gap: 4 }}>
+                  {hasActions ? (
+                    <>
+                      <div style={{ fontSize: 11, color: "var(--color-text-tertiary)", marginBottom: 2 }}>Antes de atualizar o control plane:</div>
+                      {step.addons_to_update.map((a) => (
+                        <div key={a.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12 }}>
+                          <span style={{ fontWeight: 500 }}>{a.name}</span>
+                          <span style={{ color: "var(--color-text-tertiary)" }}>
+                            {a.current_version} →{" "}
+                            <span style={{ color: a.action_type === "danger" ? "var(--color-text-danger)" : "var(--color-text-warning)", fontWeight: 500 }}>
+                              {a.required_version}
+                            </span>
                           </span>
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                        </div>
+                      ))}
+                    </>
+                  ) : (
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--color-text-success)" }}>
+                      <span>✓</span>
+                      <span>Nenhuma ação necessária — todos os addons são compatíveis com v{step.version}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           );

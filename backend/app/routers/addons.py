@@ -47,8 +47,10 @@ def _discover_addons() -> list[dict]:
                     containers = ds.spec.template.spec.containers
                     version = _extract_version(containers[0].image) if containers else "unknown"
                     s = ds.status
-                    healthy = (s.number_available or 0) > 0 and (s.number_unavailable or 0) == 0
-                    found[canonical] = {"name": canonical, "version": version, "namespace": ns, "healthy": healthy}
+                    avail = s.number_available or 0
+                    desired = s.desired_number_scheduled or 0
+                    healthy = avail > 0 and (s.number_unavailable or 0) == 0
+                    found[canonical] = {"name": canonical, "version": version, "namespace": ns, "healthy": healthy, "replicas_available": avail, "replicas_desired": desired}
         except Exception:
             pass
 
@@ -70,8 +72,9 @@ def _discover_addons() -> list[dict]:
                     version = _extract_version(containers[0].image) if containers else "unknown"
                     s = dep.status
                     desired = dep.spec.replicas or 1
-                    healthy = (s.available_replicas or 0) >= desired
-                    found[canonical] = {"name": canonical, "version": version, "namespace": ns, "healthy": healthy}
+                    avail = s.available_replicas or 0
+                    healthy = avail >= desired
+                    found[canonical] = {"name": canonical, "version": version, "namespace": ns, "healthy": healthy, "replicas_available": avail, "replicas_desired": desired}
         except Exception:
             pass
 
@@ -114,6 +117,8 @@ def list_addons():
             changelog_url=meta.get("changelog_url"),
             github_url=meta.get("github_url"),
             healthy=raw.get("healthy"),
+            replicas_available=raw.get("replicas_available"),
+            replicas_desired=raw.get("replicas_desired"),
         ))
 
     return result

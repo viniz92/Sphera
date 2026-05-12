@@ -29,48 +29,40 @@ const NG_COLORS = [
 
 function DonutChart({ nodeGroups }) {
   const total = nodeGroups.reduce((s, ng) => s + ng.desired, 0);
+  const size = 140;
+  const cx = size / 2, cy = size / 2;
+  const r = 46;
+  const strokeW = 18;
+
   if (total === 0) {
     return (
-      <div style={{ width: 100, height: 100, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <svg width="100" height="100" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="36" fill="none" stroke="var(--color-border-secondary)" strokeWidth="16" />
-          <text x="50" y="55" textAnchor="middle" fontSize="11" fill="var(--color-text-tertiary)">0</text>
-        </svg>
-      </div>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--color-border-secondary)" strokeWidth={strokeW} />
+        <text x={cx} y={cy + 5} textAnchor="middle" fontSize="13" fill="var(--color-text-tertiary)">0</text>
+      </svg>
     );
   }
 
-  const r = 36;
-  const cx = 50;
-  const cy = 50;
   const circumference = 2 * Math.PI * r;
   let offset = 0;
   const slices = nodeGroups.filter(ng => ng.desired > 0).map((ng, i) => {
-    const pct = ng.desired / total;
-    const dash = pct * circumference;
+    const dash = (ng.desired / total) * circumference;
     const gap = circumference - dash;
-    const slice = { color: NG_COLORS[i % NG_COLORS.length], dash, gap, offset, ng };
+    const slice = { color: NG_COLORS[i % NG_COLORS.length], dash, gap, offset };
     offset += dash;
     return slice;
   });
 
   return (
-    <svg width="100" height="100" viewBox="0 0 100 100" style={{ transform: "rotate(-90deg)" }}>
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--color-border-tertiary)" strokeWidth="16" />
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: "rotate(-90deg)" }}>
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--color-border-tertiary)" strokeWidth={strokeW} />
       {slices.map((s, i) => (
-        <circle
-          key={i}
-          cx={cx} cy={cy} r={r}
-          fill="none"
-          stroke={s.color}
-          strokeWidth="16"
-          strokeDasharray={`${s.dash} ${s.gap}`}
-          strokeDashoffset={-s.offset}
-          strokeLinecap="butt"
-        />
+        <circle key={i} cx={cx} cy={cy} r={r} fill="none" stroke={s.color}
+          strokeWidth={strokeW} strokeDasharray={`${s.dash} ${s.gap}`}
+          strokeDashoffset={-s.offset} strokeLinecap="butt" />
       ))}
-      <text x={cx} y={cy + 5} textAnchor="middle" fontSize="14" fontWeight="600"
-        fill="var(--color-text-primary)" style={{ transform: "rotate(90deg)", transformOrigin: "50px 50px" }}>
+      <text x={cx} y={cy + 6} textAnchor="middle" fontSize="18" fontWeight="700"
+        fill="var(--color-text-primary)" style={{ transform: `rotate(90deg)`, transformOrigin: `${cx}px ${cy}px` }}>
         {total}
       </text>
     </svg>
@@ -83,7 +75,7 @@ function NodeGroupsSection({ nodeGroups }) {
   const withNodes = nodeGroups.filter(ng => ng.desired > 0);
   const thStyle = {
     fontSize: 11, color: "var(--color-text-tertiary)", fontWeight: 400,
-    textAlign: "left", padding: "5px 8px",
+    textAlign: "left", padding: "4px 6px",
     borderBottom: "0.5px solid var(--color-border-tertiary)",
   };
 
@@ -94,12 +86,12 @@ function NodeGroupsSection({ nodeGroups }) {
       </div>
 
       <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
-        {/* Donut */}
+        {/* Donut + legenda */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flexShrink: 0 }}>
           <DonutChart nodeGroups={nodeGroups} />
           <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
             {nodeGroups.map((ng, i) => (
-              <div key={ng.name} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <div key={ng.name} style={{ display: "flex", alignItems: "center", gap: 5, opacity: ng.desired === 0 ? 0.35 : 1 }}>
                 <span style={{ width: 8, height: 8, borderRadius: "50%", background: NG_COLORS[i % NG_COLORS.length], flexShrink: 0, display: "inline-block" }} />
                 <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>{shortNgName(ng.name)}</span>
                 <span style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>({ng.desired})</span>
@@ -114,49 +106,50 @@ function NodeGroupsSection({ nodeGroups }) {
             <thead>
               <tr>
                 <th style={thStyle}>Node group</th>
-                <th style={{ ...thStyle, width: 120 }}>Instância</th>
-                <th style={{ ...thStyle, width: 90, textAlign: "center" }}>Min/Des/Max</th>
-                <th style={{ ...thStyle, width: 80 }}>Status</th>
+                <th style={{ ...thStyle, width: 110 }}>Instância</th>
+                <th style={{ ...thStyle, width: 80, textAlign: "center" }}>Min/Des/Max</th>
+                <th style={{ ...thStyle, width: 68 }}>Status</th>
               </tr>
             </thead>
             <tbody>
-              {nodeGroups.map((ng, i) => (
-                <>
-                  <tr key={ng.name} style={{ borderBottom: ng.instances?.length ? "none" : "0.5px solid var(--color-border-tertiary)" }}>
-                    <td style={{ padding: "8px 8px 2px", verticalAlign: "top" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ width: 8, height: 8, borderRadius: "50%", background: NG_COLORS[i % NG_COLORS.length], flexShrink: 0, display: "inline-block" }} />
-                        <span style={{ fontSize: 12, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={ng.name}>
-                          {shortNgName(ng.name)}
-                        </span>
-                      </div>
-                    </td>
-                    <td style={{ padding: "8px 8px 2px", fontSize: 12, color: "var(--color-text-secondary)", verticalAlign: "top" }}>
-                      {ng.instance_type ?? "—"}
-                    </td>
-                    <td style={{ padding: "8px 8px 2px", fontSize: 12, color: "var(--color-text-secondary)", textAlign: "center", verticalAlign: "top" }}>
-                      {ng.min_size} / <span style={{ fontWeight: 600, color: ng.desired > 0 ? "var(--color-text-primary)" : "var(--color-text-tertiary)" }}>{ng.desired}</span> / {ng.max_size}
-                    </td>
-                    <td style={{ padding: "8px 8px 2px", fontSize: 11, verticalAlign: "top", color: ng.status === "ACTIVE" ? "var(--color-text-success)" : "var(--color-text-warning)" }}>
-                      {ng.status ?? "—"}
-                    </td>
-                  </tr>
-                  {(ng.instances || []).map((inst) => (
-                    <tr key={inst.instance_id} style={{ borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
-                      <td colSpan={4} style={{ padding: "2px 8px 6px 22px" }}>
-                        <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", fontFamily: "monospace" }}>
-                          {inst.instance_id}
-                          {inst.private_ip && (
-                            <span style={{ color: "var(--color-text-secondary)", marginLeft: 8 }}>
-                              {inst.private_ip}
-                            </span>
-                          )}
-                        </span>
+              {nodeGroups.map((ng, i) => {
+                const dimmed = ng.desired === 0;
+                return (
+                  <>
+                    <tr key={ng.name} style={{ borderBottom: ng.instances?.length ? "none" : "0.5px solid var(--color-border-tertiary)", opacity: dimmed ? 0.35 : 1 }}>
+                      <td style={{ padding: "6px 6px 2px", verticalAlign: "top" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                          <span style={{ width: 7, height: 7, borderRadius: "50%", background: NG_COLORS[i % NG_COLORS.length], flexShrink: 0, display: "inline-block" }} />
+                          <span style={{ fontSize: 12, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={ng.name}>
+                            {shortNgName(ng.name)}
+                          </span>
+                        </div>
+                      </td>
+                      <td style={{ padding: "6px 6px 2px", fontSize: 12, color: "var(--color-text-secondary)", verticalAlign: "top" }}>
+                        {ng.instance_type ?? "—"}
+                      </td>
+                      <td style={{ padding: "6px 6px 2px", fontSize: 12, color: "var(--color-text-secondary)", textAlign: "center", verticalAlign: "top" }}>
+                        {ng.min_size} / <span style={{ fontWeight: 600, color: ng.desired > 0 ? "var(--color-text-primary)" : "var(--color-text-tertiary)" }}>{ng.desired}</span> / {ng.max_size}
+                      </td>
+                      <td style={{ padding: "6px 6px 2px", fontSize: 11, verticalAlign: "top", color: ng.status === "ACTIVE" ? "var(--color-text-success)" : "var(--color-text-warning)" }}>
+                        {ng.status ?? "—"}
                       </td>
                     </tr>
-                  ))}
-                </>
-              ))}
+                    {(ng.instances || []).map((inst) => (
+                      <tr key={inst.instance_id} style={{ borderBottom: "0.5px solid var(--color-border-tertiary)", opacity: dimmed ? 0.35 : 1 }}>
+                        <td colSpan={4} style={{ padding: "2px 6px 5px 20px" }}>
+                          <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", fontFamily: "monospace" }}>
+                            {inst.instance_id}
+                            {inst.private_ip && (
+                              <span style={{ color: "var(--color-text-secondary)", marginLeft: 8 }}>{inst.private_ip}</span>
+                            )}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </>
+                );
+              })}
             </tbody>
           </table>
         </div>

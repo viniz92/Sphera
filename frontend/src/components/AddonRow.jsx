@@ -44,15 +44,20 @@ export function AddonRow({ addon }) {
         </td>
         <td style={{ padding: "10px 8px", verticalAlign: "middle" }}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-            {addon.healthy === true && (
-              <span title="Rodando" style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--color-text-success)", flexShrink: 0, display: "inline-block" }} />
-            )}
-            {addon.healthy === false && (
-              <span title="Com problema" style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--color-text-danger)", flexShrink: 0, display: "inline-block" }} />
-            )}
-            {addon.healthy === null || addon.healthy === undefined ? (
-              <span title="Status desconhecido" style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--color-text-tertiary)", flexShrink: 0, display: "inline-block" }} />
-            ) : null}
+            <span style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 2, flexShrink: 0 }}>
+              <span
+                title={addon.healthy === true ? "Rodando" : addon.healthy === false ? "Com problema" : "Status desconhecido"}
+                style={{
+                  width: 7, height: 7, borderRadius: "50%", display: "inline-block",
+                  background: addon.healthy === true ? "var(--color-text-success)" : addon.healthy === false ? "var(--color-text-danger)" : "var(--color-text-tertiary)",
+                }}
+              />
+              {addon.replicas_desired != null && (
+                <span style={{ fontSize: 9, color: addon.healthy === false ? "var(--color-text-danger)" : "var(--color-text-tertiary)", lineHeight: 1, whiteSpace: "nowrap" }}>
+                  {addon.replicas_available}/{addon.replicas_desired}
+                </span>
+              )}
+            </span>
             <span style={{ fontWeight: 700, fontSize: 13 }}>{addon.name}</span>
           </span>
         </td>
