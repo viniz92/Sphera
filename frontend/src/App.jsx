@@ -73,10 +73,11 @@ export default function App() {
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            title="Atualizar dados"
-            style={{ background: "var(--color-background-info)", border: "1px solid var(--color-text-info)", color: "var(--color-text-info)", borderRadius: "var(--border-radius-md)", padding: "5px 12px", fontSize: 12, fontWeight: 500, lineHeight: 1, cursor: refreshing ? "default" : "pointer", display: "flex", alignItems: "center", gap: 6, opacity: refreshing ? 0.6 : 1 }}
+            style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", fontSize: 13, fontWeight: 600, borderRadius: "var(--border-radius-md)", border: "none", background: "#3b82f6", color: "#fff", cursor: refreshing ? "default" : "pointer", opacity: refreshing ? 0.65 : 1 }}
           >
-            <span style={{ fontSize: 15, display: "inline-block", animation: refreshing ? "spin-slow 1s linear infinite" : "none" }}>{refreshing ? "↻" : "↺"}</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ animation: refreshing ? "spin-slow 0.8s linear infinite" : "none" }}>
+              <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
+            </svg>
             {refreshing ? "Atualizando..." : "Atualizar"}
           </button>
           <button

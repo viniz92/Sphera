@@ -37,9 +37,9 @@ export function AddonRow({ addon }) {
               color: "var(--color-text-tertiary)", display: "flex", alignItems: "center",
             }}
           >
-            <span style={{ display: "inline-block", transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "rotate(0deg)", fontSize: 20, fontWeight: 900, lineHeight: 1 }}>
-              ▼
-            </span>
+            <svg width="16" height="16" viewBox="0 0 16 16" style={{ display: "block", transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
+              <polyline points="3,5 8,11 13,5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </button>
         </td>
         <td style={{ padding: "10px 8px", verticalAlign: "middle" }}>
