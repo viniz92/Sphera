@@ -26,3 +26,6 @@ class Addon(BaseModel):
     changelog_url: Optional[str] = None
     github_url: Optional[str] = None
     description: Optional[str] = None
+    healthy: Optional[bool] = None
+    replicas_available: Optional[int] = None
+    replicas_desired: Optional[int] = None
