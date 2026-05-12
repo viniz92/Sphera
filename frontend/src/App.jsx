@@ -141,7 +141,7 @@ export default function App() {
           <div ref={langMenuRef} style={{ position: "relative" }}>
             <button
               onClick={() => setShowLangMenu(v => !v)}
-              style={{ background: "none", border: "0.5px solid var(--color-border-secondary)", borderRadius: "var(--border-radius-md)", padding: "3px 6px", lineHeight: 1, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
+              style={{ background: "none", border: "0.5px solid var(--color-border-secondary)", borderRadius: "var(--border-radius-md)", padding: "3px 6px", lineHeight: 1, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, color: "var(--color-text-primary)" }}
             >
               <FlagIcon code={lang} />
               <svg width="8" height="5" viewBox="0 0 8 5" style={{ opacity: 0.5 }}>
