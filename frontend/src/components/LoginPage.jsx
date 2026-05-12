@@ -1,4 +1,33 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+
+function Stars() {
+  const stars = useMemo(() => Array.from({ length: 120 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: Math.random() * 1.8 + 0.4,
+    opacity: Math.random() * 0.55 + 0.08,
+    duration: Math.random() * 4 + 2,
+    delay: Math.random() * 5,
+  })), []);
+
+  return (
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
+      {stars.map(s => (
+        <div key={s.id} style={{
+          position: "absolute",
+          left: `${s.x}%`, top: `${s.y}%`,
+          width: s.size, height: s.size,
+          borderRadius: "50%",
+          background: s.size > 1.8 ? "#a0b8ff" : "#ffffff",
+          "--star-opacity": s.opacity,
+          opacity: s.opacity,
+          animation: `twinkle ${s.duration}s ease-in-out ${s.delay}s infinite`,
+        }} />
+      ))}
+    </div>
+  );
+}
 
 function AnimatedLogo() {
   return (
@@ -79,9 +108,10 @@ export function LoginPage({ onLogin }) {
   return (
     <div style={{
       minHeight: "100vh", display: "flex", flexDirection: "column",
-      alignItems: "center", justifyContent: "center",
+      alignItems: "center", justifyContent: "center", position: "relative",
       background: "radial-gradient(ellipse at 50% 40%, #0a0520 0%, #060610 60%, #03030a 100%)",
     }}>
+      <Stars />
       <div className="form-anim" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 28, width: 320 }}>
 
         {/* Logo animado */}

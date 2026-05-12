@@ -5,6 +5,9 @@ from typing import Optional
 class NodeInstance(BaseModel):
     instance_id: str
     private_ip: Optional[str] = None
+    az: Optional[str] = None
+    node_status: Optional[str] = None
+    node_name: Optional[str] = None
 
 
 class NodeGroup(BaseModel):

@@ -72,3 +72,8 @@ button { font-family: inherit; cursor: pointer; }
 .eyes-anim       { animation: eyes-pulse 3.2s ease-in-out infinite; }
 .form-anim       { animation: form-in .5s ease forwards; }
 .spin-anim       { animation: spin-slow 1s linear infinite; }
+
+@keyframes twinkle {
+  0%, 100% { opacity: var(--star-opacity); transform: scale(1); }
+  50%       { opacity: calc(var(--star-opacity) * 0.2); transform: scale(0.7); }
+}

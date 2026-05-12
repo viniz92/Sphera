@@ -128,11 +128,25 @@ function NodeGroupsSection({ nodeGroups }) {
                     </tr>
                     {(ng.instances ?? []).map(inst => (
                       <tr key={inst.instance_id} style={{ borderBottom: "0.5px solid var(--color-border-tertiary)", opacity: dimmed ? 0.35 : 1 }}>
-                        <td colSpan={4} style={{ padding: "2px 6px 5px 20px" }}>
-                          <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", fontFamily: "monospace" }}>
-                            {inst.instance_id}
-                            {inst.private_ip && <span style={{ color: "var(--color-text-secondary)", marginLeft: 8 }}>{inst.private_ip}</span>}
-                          </span>
+                        <td colSpan={4} style={{ padding: "3px 6px 6px 22px" }}>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 16px", alignItems: "center" }}>
+                            <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", fontFamily: "monospace" }}>{inst.instance_id}</span>
+                            {inst.private_ip && (
+                              <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>🖧 {inst.private_ip}</span>
+                            )}
+                            {inst.az && (
+                              <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>📍 {inst.az}</span>
+                            )}
+                            {inst.node_name && inst.node_name !== inst.instance_id && (
+                              <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", fontFamily: "monospace" }}>{inst.node_name}</span>
+                            )}
+                            {inst.node_status && (
+                              <span style={{ fontSize: 10, padding: "1px 7px", borderRadius: 10, fontWeight: 600,
+                                background: inst.node_status === "Ready" ? "var(--color-background-success)" : "var(--color-background-danger)",
+                                color: inst.node_status === "Ready" ? "var(--color-text-success)" : "var(--color-text-danger)",
+                              }}>{inst.node_status}</span>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}

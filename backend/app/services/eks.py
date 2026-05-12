@@ -45,15 +45,25 @@ def _get_nodes_by_nodegroup() -> dict[str, list[NodeInstance]]:
     result: dict[str, list[NodeInstance]] = {}
     try:
         for node in get_core_v1().list_node().items:
-            ng = (node.metadata.labels or {}).get("eks.amazonaws.com/nodegroup", "")
+            labels = node.metadata.labels or {}
+            ng = labels.get("eks.amazonaws.com/nodegroup", "")
             if not ng:
                 continue
             instance_id = (node.spec.provider_id or "").split("/")[-1]
-            private_ip = next(
-                (a.address for a in (node.status.addresses or []) if a.type == "InternalIP"), None
-            )
+            addresses = node.status.addresses or []
+            private_ip = next((a.address for a in addresses if a.type == "InternalIP"), None)
+            node_name = next((a.address for a in addresses if a.type == "Hostname"), node.metadata.name)
+            az = labels.get("topology.kubernetes.io/zone") or labels.get("failure-domain.beta.kubernetes.io/zone")
+            node_status = "Unknown"
+            for cond in (node.status.conditions or []):
+                if cond.type == "Ready":
+                    node_status = "Ready" if cond.status == "True" else "NotReady"
+                    break
             if instance_id:
-                result.setdefault(ng, []).append(NodeInstance(instance_id=instance_id, private_ip=private_ip))
+                result.setdefault(ng, []).append(NodeInstance(
+                    instance_id=instance_id, private_ip=private_ip,
+                    az=az, node_status=node_status, node_name=node_name,
+                ))
     except Exception:
         pass
     return result
