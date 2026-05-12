@@ -1,7 +1,8 @@
 import boto3
 from datetime import date, datetime
 from app.services.k8s import get_cluster_name, get_region_from_kubeconfig
-from app.models.cluster import ClusterInfo, NodeGroup
+from app.models.cluster import ClusterInfo, NodeGroup, UpgradeStep
+from app.services.compatibility import check_compat
 
 # Datas de suporte padrão (gratuito) por versão do EKS
 # Fonte: https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html
@@ -60,14 +61,20 @@ def get_cluster_info() -> ClusterInfo:
 
     for ng_name in ng_response.get("nodegroups", []):
         ng_data = eks.describe_nodegroup(clusterName=cluster_name, nodegroupName=ng_name)["nodegroup"]
-        desired = ng_data.get("scalingConfig", {}).get("desiredSize", 0)
+        scaling = ng_data.get("scalingConfig", {})
+        desired = scaling.get("desiredSize", 0)
         instance_types = ng_data.get("instanceTypes", [])
         node_groups.append(NodeGroup(
             name=ng_name,
-            node_count=desired,
             instance_type=instance_types[0] if instance_types else None,
+            desired=desired,
+            min_size=scaling.get("minSize", 0),
+            max_size=scaling.get("maxSize", 0),
+            status=ng_data.get("status"),
         ))
         total_nodes += desired
+
+    upgrade_path = _build_upgrade_path(version, next_ver)
 
     return ClusterInfo(
         name=cluster_name,
@@ -82,4 +89,63 @@ def get_cluster_info() -> ClusterInfo:
         eol_date=lifecycle.get("eol"),
         eol_days_remaining=_days_remaining(lifecycle["eol"]) if lifecycle.get("eol") else None,
         eol_percent_elapsed=_percent_elapsed(lifecycle["release"], lifecycle["eol"]) if lifecycle.get("release") and lifecycle.get("eol") else None,
+        upgrade_path=upgrade_path,
     )
+
+
+def _build_upgrade_path(current_ver: str, next_ver: str) -> list[UpgradeStep]:
+    from app.services.k8s import get_apps_v1, get_core_v1
+    from app.routers.addons import ADDON_NAME_MAP, _extract_version
+
+    steps = []
+    ver = current_ver
+    target = next_ver
+
+    while ver != target:
+        nxt = NEXT_VERSION.get(ver, target)
+        addons_to_update = []
+
+        try:
+            apps = get_apps_v1()
+            core = get_core_v1()
+            found = {}
+
+            for ns in ["kube-system", "default"]:
+                try:
+                    for ds in apps.list_namespaced_daemon_set(namespace=ns).items:
+                        canonical = ADDON_NAME_MAP.get(ds.metadata.name)
+                        if canonical and canonical not in found:
+                            containers = ds.spec.template.spec.containers
+                            found[canonical] = _extract_version(containers[0].image) if containers else "unknown"
+                except Exception:
+                    pass
+
+            all_ns = [n.metadata.name for n in core.list_namespace().items]
+            for ns in all_ns:
+                try:
+                    for dep in apps.list_namespaced_deployment(namespace=ns).items:
+                        canonical = ADDON_NAME_MAP.get(dep.metadata.name)
+                        if canonical and canonical not in found:
+                            containers = dep.spec.template.spec.containers
+                            found[canonical] = _extract_version(containers[0].image) if containers else "unknown"
+                except Exception:
+                    pass
+
+            for name, addon_ver in found.items():
+                status, req_ver, action_type = check_compat(name, addon_ver, nxt)
+                if status != "ok" and req_ver:
+                    addons_to_update.append({
+                        "name": name,
+                        "current_version": addon_ver,
+                        "required_version": req_ver,
+                        "action_type": action_type,
+                    })
+        except Exception:
+            pass
+
+        steps.append(UpgradeStep(version=nxt, addons_to_update=addons_to_update))
+        ver = nxt
+        if ver == target:
+            break
+
+    return steps

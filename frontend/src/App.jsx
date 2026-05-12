@@ -15,10 +15,20 @@ function useTheme() {
   return [theme, () => setTheme((t) => (t === "dark" ? "light" : "dark"))];
 }
 
+function formatLastUpdated(date) {
+  if (!date) return null;
+  return date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
 export default function App() {
-  const { cluster, loading, error, mode, upload } = useCluster();
-  const { addons, loading: addonsLoading } = useAddons(!!cluster);
+  const { cluster, loading, refreshing, error, mode, upload, refresh, lastUpdated } = useCluster();
+  const { addons, loading: addonsLoading, reload: reloadAddons } = useAddons(!!cluster);
   const [theme, toggleTheme] = useTheme();
+
+  function handleRefresh() {
+    refresh();
+    reloadAddons();
+  }
 
   if (loading) {
     return (
@@ -41,6 +51,25 @@ export default function App() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.5rem 0 1rem" }}>
         <h1 style={{ fontSize: 16, fontWeight: 500, margin: 0 }}>Palantir</h1>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {lastUpdated && (
+            <span style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>
+              atualizado às {formatLastUpdated(lastUpdated)}
+            </span>
+          )}
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            title="Atualizar dados"
+            style={{
+              background: "none", border: "0.5px solid var(--color-border-secondary)",
+              color: refreshing ? "var(--color-text-tertiary)" : "var(--color-text-secondary)",
+              borderRadius: "var(--border-radius-md)", padding: "4px 8px",
+              fontSize: 13, lineHeight: 1, cursor: refreshing ? "default" : "pointer",
+              transition: "opacity 0.2s",
+            }}
+          >
+            {refreshing ? "↻" : "↺"}
+          </button>
           <button
             onClick={toggleTheme}
             title={theme === "dark" ? "Mudar para tema claro" : "Mudar para tema escuro"}
@@ -59,11 +88,7 @@ export default function App() {
           )}
         </div>
       </div>
-      <ClusterCard
-        cluster={cluster}
-        addons={addons}
-        addonsLoading={addonsLoading}
-      />
+      <ClusterCard cluster={cluster} addons={addons} addonsLoading={addonsLoading} />
     </div>
   );
 }
