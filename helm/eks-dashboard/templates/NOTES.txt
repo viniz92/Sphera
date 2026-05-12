@@ -1,0 +1,44 @@
+╔══════════════════════════════════════════════════════════╗
+║            EKS Dashboard instalado com sucesso!          ║
+╚══════════════════════════════════════════════════════════╝
+
+{{- if .Values.ingress.enabled }}
+
+✅ Ingress habilitado. Acesse em:
+   {{ if .Values.ingress.tls.enabled }}https{{ else }}http{{ end }}://{{ .Values.ingress.host }}
+
+   (Aguarde o ALB/NLB provisionar — pode levar 1-2 minutos)
+
+{{- else }}
+
+Para acessar o dashboard, execute o port-forward:
+
+   kubectl port-forward svc/{{ include "eks-dashboard.fullname" . }} 8080:80 \
+     -n {{ include "eks-dashboard.namespace" . }}
+
+   Depois acesse: http://localhost:8080
+
+Para habilitar Ingress com ALB, adicione ao seu values.yaml:
+
+   ingress:
+     enabled: true
+     className: alb
+     host: eks-dashboard.seu-dominio.com
+     annotations:
+       alb.ingress.kubernetes.io/scheme: internet-facing
+       alb.ingress.kubernetes.io/target-type: ip
+
+   E rode: helm upgrade {{ .Release.Name }} eks-dashboard/eks-dashboard -f values.yaml
+
+{{- end }}
+
+Para verificar o status dos pods:
+
+   kubectl get pods -n {{ include "eks-dashboard.namespace" . }} \
+     -l app.kubernetes.io/name={{ include "eks-dashboard.name" . }}
+
+Para ver os logs:
+
+   kubectl logs -n {{ include "eks-dashboard.namespace" . }} \
+     -l app.kubernetes.io/name={{ include "eks-dashboard.name" . }} \
+     -c backend --follow

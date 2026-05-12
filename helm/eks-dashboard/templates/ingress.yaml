@@ -1,0 +1,43 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "eks-dashboard.fullname" . }}
+  namespace: {{ include "eks-dashboard.namespace" . }}
+  labels:
+    {{- include "eks-dashboard.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          # Frontend
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "eks-dashboard.fullname" . }}
+                port:
+                  name: frontend
+          # Backend API — proxy via /api
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "eks-dashboard.fullname" . }}
+                port:
+                  name: backend
+{{- end }}

@@ -1,0 +1,105 @@
+# =============================================================================
+# EKS Dashboard — values.yaml
+# =============================================================================
+
+# Número de réplicas do backend e frontend
+replicaCount: 1
+
+# Imagens dos containers
+image:
+  backend:
+    repository: seu-usuario/eks-dashboard-backend
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+  frontend:
+    repository: seu-usuario/eks-dashboard-frontend
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+
+# Nome do ServiceAccount que o pod vai usar
+# O chart cria o ServiceAccount e o ClusterRole automaticamente
+serviceAccount:
+  create: true
+  name: eks-dashboard
+  annotations: {}
+    # eks.amazonaws.com/role-arn: arn:aws:iam::123456789:role/eks-dashboard-role
+
+# Configurações do Service interno
+service:
+  type: ClusterIP
+  backendPort: 8000
+  frontendPort: 5173
+
+# =============================================================================
+# Ingress — desabilitado por padrão (use port-forward)
+# Para habilitar, configure ingress.enabled: true e ingress.host
+# =============================================================================
+ingress:
+  enabled: false
+
+  # Classe do Ingress (nginx, alb, etc.)
+  className: ""
+
+  # Annotations para ALB (AWS Load Balancer Controller)
+  annotations: {}
+    # kubernetes.io/ingress.class: alb
+    # alb.ingress.kubernetes.io/scheme: internet-facing
+    # alb.ingress.kubernetes.io/target-type: ip
+    # alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:...
+
+  # Host do Ingress
+  host: eks-dashboard.exemplo.com
+
+  # TLS
+  tls:
+    enabled: false
+    secretName: eks-dashboard-tls
+
+# =============================================================================
+# Recursos de CPU e memória
+# =============================================================================
+resources:
+  backend:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  frontend:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+# Namespace onde o dashboard vai rodar
+# Por padrão usa o namespace do helm install
+namespaceOverride: ""
+
+# Node selector, tolerations e affinity
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Variáveis de ambiente extras para o backend
+extraEnv: []
+  # - name: AWS_DEFAULT_REGION
+  #   value: us-east-1
+
+# Pod annotations
+podAnnotations: {}
+
+# Security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL

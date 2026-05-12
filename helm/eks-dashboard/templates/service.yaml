@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "eks-dashboard.fullname" . }}
+  namespace: {{ include "eks-dashboard.namespace" . }}
+  labels:
+    {{- include "eks-dashboard.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    {{- include "eks-dashboard.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: frontend
+      port: 80
+      targetPort: frontend
+      protocol: TCP
+    - name: backend
+      port: 8000
+      targetPort: backend
+      protocol: TCP
