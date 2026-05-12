@@ -243,7 +243,7 @@ const TAB_KEYS = [
 ];
 
 export function ClusterCard({ cluster, addons, addonsLoading }) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [activeTab, setActiveTab] = useState("addons");
   const days = cluster.eol_days_remaining;
   const eolBadgeColor = days < 60 ? "var(--color-text-danger)" : days < 180 ? "var(--color-text-warning)" : "var(--color-text-success)";
@@ -295,8 +295,8 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
         : <AddonTable addons={addons} cluster={cluster} />
       )}
       {activeTab === "nos" && <NodeGroupsSection nodeGroups={cluster.node_groups} />}
-      {activeTab === "eventos" && <EventsPanel />}
-      {activeTab === "monitor" && <MonitorPanel />}
+      {activeTab === "eventos" && <EventsPanel key={lang} />}
+      {activeTab === "monitor" && <MonitorPanel key={lang} />}
     </div>
   );
 }
