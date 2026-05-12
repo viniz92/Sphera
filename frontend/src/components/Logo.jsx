@@ -41,25 +41,15 @@ export function Logo({ size = 40, showName = false, className = "" }) {
       </svg>
 
       {showName && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-          <span style={{
-            fontSize: size * 0.38,
-            fontWeight: 500,
-            color: "var(--color-text-primary)",
-            letterSpacing: "0.08em",
-            lineHeight: 1,
-          }}>
-            PALANTIR
-          </span>
-          <span style={{
-            fontSize: size * 0.2,
-            color: "#4A7FD4",
-            letterSpacing: "0.12em",
-            lineHeight: 1,
-          }}>
-            EKS DASHBOARD
-          </span>
-        </div>
+        <span style={{
+          fontSize: size * 0.38,
+          fontWeight: 500,
+          color: "var(--color-text-primary)",
+          letterSpacing: "0.08em",
+          lineHeight: 1,
+        }}>
+          PALANTIR
+        </span>
       )}
     </div>
   );

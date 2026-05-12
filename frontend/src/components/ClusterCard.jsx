@@ -23,14 +23,18 @@ const NG_COLORS = [
 
 function DonutChart({ nodeGroups }) {
   const total = nodeGroups.reduce((s, ng) => s + (ng.desired ?? ng.node_count ?? 0), 0);
-  const size = 140, cx = 70, cy = 70, r = 46, strokeW = 18;
+  const size = 164, cx = 82, cy = 82, r = 56, strokeW = 22;
+
+  const shadow = "drop-shadow(0 6px 18px rgba(0,0,0,0.85)) drop-shadow(0 2px 6px rgba(0,0,0,0.6)) drop-shadow(0 0 1px rgba(255,255,255,0.06))";
 
   if (total === 0) {
     return (
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--color-border-secondary)" strokeWidth={strokeW} />
-        <text x={cx} y={cy + 5} textAnchor="middle" fontSize="13" fill="var(--color-text-tertiary)">0</text>
-      </svg>
+      <div style={{ filter: shadow }}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--color-border-secondary)" strokeWidth={strokeW} />
+          <text x={cx} y={cy + 5} textAnchor="middle" fontSize="14" fill="var(--color-text-tertiary)">0</text>
+        </svg>
+      </div>
     );
   }
 
@@ -46,18 +50,20 @@ function DonutChart({ nodeGroups }) {
   });
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: "rotate(-90deg)" }}>
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--color-border-tertiary)" strokeWidth={strokeW} />
-      {slices.map((s, i) => (
-        <circle key={i} cx={cx} cy={cy} r={r} fill="none" stroke={s.color}
-          strokeWidth={strokeW} strokeDasharray={`${s.dash} ${s.gap}`}
-          strokeDashoffset={-s.offset} strokeLinecap="butt" />
-      ))}
-      <text x={cx} y={cy + 6} textAnchor="middle" fontSize="18" fontWeight="700"
-        fill="var(--color-text-primary)" style={{ transform: `rotate(90deg)`, transformOrigin: `${cx}px ${cy}px` }}>
-        {total}
-      </text>
-    </svg>
+    <div style={{ filter: shadow }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: "rotate(-90deg)" }}>
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--color-border-tertiary)" strokeWidth={strokeW} />
+        {slices.map((s, i) => (
+          <circle key={i} cx={cx} cy={cy} r={r} fill="none" stroke={s.color}
+            strokeWidth={strokeW} strokeDasharray={`${s.dash} ${s.gap}`}
+            strokeDashoffset={-s.offset} strokeLinecap="butt" />
+        ))}
+        <text x={cx} y={cy + 7} textAnchor="middle" fontSize="22" fontWeight="700"
+          fill="var(--color-text-primary)" style={{ transform: `rotate(90deg)`, transformOrigin: `${cx}px ${cy}px` }}>
+          {total}
+        </text>
+      </svg>
+    </div>
   );
 }
 
@@ -107,15 +113,29 @@ function NodeGroupsSection({ nodeGroups }) {
                 const count = ng.desired ?? ng.node_count ?? 0;
                 const dimmed = count === 0;
                 const minS = ng.min_size ?? 0, maxS = ng.max_size ?? 0;
+                const instances = ng.instances ?? [];
+                const readyCount = instances.filter(inst => inst.node_status === "Ready").length;
+                const allReady = instances.length > 0 && readyCount === instances.length;
+                const someNotReady = instances.length > 0 && readyCount < instances.length;
                 return (
                   <>
-                    <tr key={ng.name} style={{ borderBottom: (ng.instances?.length ?? 0) > 0 ? "none" : "0.5px solid var(--color-border-tertiary)", opacity: dimmed ? 0.35 : 1 }}>
+                    <tr key={ng.name} style={{ borderBottom: instances.length > 0 ? "none" : "0.5px solid var(--color-border-tertiary)", opacity: dimmed ? 0.35 : 1 }}>
                       <td style={{ padding: "6px 6px 2px", verticalAlign: "top" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
                           <span style={{ width: 7, height: 7, borderRadius: "50%", background: NG_COLORS[i % NG_COLORS.length], flexShrink: 0, display: "inline-block" }} />
                           <span style={{ fontSize: 12, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={ng.name}>
                             {shortNgName(ng.name)}
                           </span>
+                          {allReady && (
+                            <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 10, fontWeight: 600, background: "var(--color-background-success)", color: "var(--color-text-success)", flexShrink: 0 }}>
+                              ✓ {readyCount}/{instances.length} Ready
+                            </span>
+                          )}
+                          {someNotReady && (
+                            <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 10, fontWeight: 600, background: "var(--color-background-danger)", color: "var(--color-text-danger)", flexShrink: 0 }}>
+                              {readyCount}/{instances.length} Ready
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td style={{ padding: "6px 6px 2px", fontSize: 12, color: "var(--color-text-secondary)", verticalAlign: "top" }}>{ng.instance_type ?? "—"}</td>
@@ -126,25 +146,19 @@ function NodeGroupsSection({ nodeGroups }) {
                         {ng.status ?? "—"}
                       </td>
                     </tr>
-                    {(ng.instances ?? []).map(inst => (
+                    {instances.map(inst => (
                       <tr key={inst.instance_id} style={{ borderBottom: "0.5px solid var(--color-border-tertiary)", opacity: dimmed ? 0.35 : 1 }}>
-                        <td colSpan={4} style={{ padding: "3px 6px 6px 22px" }}>
-                          <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 16px", alignItems: "center" }}>
+                        <td colSpan={4} style={{ padding: "2px 6px 5px 20px" }}>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: "3px 10px", alignItems: "center" }}>
                             <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", fontFamily: "monospace" }}>{inst.instance_id}</span>
                             {inst.private_ip && (
-                              <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>🖧 {inst.private_ip}</span>
+                              <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>{inst.private_ip}</span>
                             )}
                             {inst.az && (
-                              <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>📍 {inst.az}</span>
+                              <span style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>{inst.az}</span>
                             )}
                             {inst.node_name && inst.node_name !== inst.instance_id && (
                               <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", fontFamily: "monospace" }}>{inst.node_name}</span>
-                            )}
-                            {inst.node_status && (
-                              <span style={{ fontSize: 10, padding: "1px 7px", borderRadius: 10, fontWeight: 600,
-                                background: inst.node_status === "Ready" ? "var(--color-background-success)" : "var(--color-background-danger)",
-                                color: inst.node_status === "Ready" ? "var(--color-text-success)" : "var(--color-text-danger)",
-                              }}>{inst.node_status}</span>
                             )}
                           </div>
                         </td>
