@@ -70,6 +70,8 @@ export const translations = {
     // MonitorPanel
     loadingMetrics: "Carregando métricas...",
     nodeCol: "Nó",
+    cpuCol: "CPU",
+    memoryCol: "Memória",
     metricsUnavailable: "Metrics Server não disponível neste cluster. Instale o metrics-server para habilitar o monitoramento.",
     errorMetrics: "Erro ao buscar métricas",
 
@@ -156,6 +158,8 @@ export const translations = {
     // MonitorPanel
     loadingMetrics: "Loading metrics...",
     nodeCol: "Node",
+    cpuCol: "CPU",
+    memoryCol: "Memory",
     metricsUnavailable: "Metrics Server not available on this cluster. Install metrics-server to enable monitoring.",
     errorMetrics: "Error fetching metrics",
 

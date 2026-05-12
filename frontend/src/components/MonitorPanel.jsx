@@ -63,8 +63,8 @@ export function MonitorPanel() {
       <thead>
         <tr>
           <th style={thStyle}>{t("nodeCol")}</th>
-          <th style={{ ...thStyle, width: "32%" }}>CPU</th>
-          <th style={{ ...thStyle, width: "32%" }}>Memória</th>
+          <th style={{ ...thStyle, width: "32%" }}>{t("cpuCol")}</th>
+          <th style={{ ...thStyle, width: "32%" }}>{t("memoryCol")}</th>
         </tr>
       </thead>
       <tbody>
