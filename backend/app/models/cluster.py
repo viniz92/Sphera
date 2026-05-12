@@ -2,6 +2,11 @@ from pydantic import BaseModel
 from typing import Optional
 
 
+class NodeInstance(BaseModel):
+    instance_id: str
+    private_ip: Optional[str] = None
+
+
 class NodeGroup(BaseModel):
     name: str
     instance_type: Optional[str] = None
@@ -9,6 +14,7 @@ class NodeGroup(BaseModel):
     min_size: int = 0
     max_size: int = 0
     status: Optional[str] = None
+    instances: list[NodeInstance] = []
 
 
 class UpgradeStep(BaseModel):

@@ -43,7 +43,7 @@ export function AddonRow({ addon }) {
           </button>
         </td>
         <td style={{ padding: "10px 8px", verticalAlign: "middle" }}>
-          <span style={{ fontWeight: 500, fontSize: 13 }}>{addon.name}</span>
+          <span style={{ fontWeight: 700, fontSize: 13 }}>{addon.name}</span>
         </td>
         <td style={{ width: 80, padding: "10px 8px", verticalAlign: "middle" }}>
           <span style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>{addon.version}</span>

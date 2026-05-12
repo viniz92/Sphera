@@ -1,7 +1,7 @@
 import boto3
 from datetime import date, datetime
 from app.services.k8s import get_cluster_name, get_region_from_kubeconfig
-from app.models.cluster import ClusterInfo, NodeGroup, UpgradeStep
+from app.models.cluster import ClusterInfo, NodeGroup, NodeInstance, UpgradeStep
 from app.services.compatibility import check_compat
 
 # Datas de suporte padrão (gratuito) por versão do EKS
@@ -58,6 +58,7 @@ def get_cluster_info() -> ClusterInfo:
     ng_response = eks.list_nodegroups(clusterName=cluster_name)
     node_groups = []
     total_nodes = 0
+    k8s_nodes_by_ng = _get_nodes_by_nodegroup()
 
     for ng_name in ng_response.get("nodegroups", []):
         ng_data = eks.describe_nodegroup(clusterName=cluster_name, nodegroupName=ng_name)["nodegroup"]
@@ -71,6 +72,7 @@ def get_cluster_info() -> ClusterInfo:
             min_size=scaling.get("minSize", 0),
             max_size=scaling.get("maxSize", 0),
             status=ng_data.get("status"),
+            instances=k8s_nodes_by_ng.get(ng_name, []),
         ))
         total_nodes += desired
 
@@ -91,6 +93,30 @@ def get_cluster_info() -> ClusterInfo:
         eol_percent_elapsed=_percent_elapsed(lifecycle["release"], lifecycle["eol"]) if lifecycle.get("release") and lifecycle.get("eol") else None,
         upgrade_path=upgrade_path,
     )
+
+
+def _get_nodes_by_nodegroup() -> dict[str, list[NodeInstance]]:
+    from app.services.k8s import get_core_v1
+    result: dict[str, list[NodeInstance]] = {}
+    try:
+        core = get_core_v1()
+        for node in core.list_node().items:
+            ng_name = (node.metadata.labels or {}).get("eks.amazonaws.com/nodegroup", "")
+            if not ng_name:
+                continue
+            provider_id = node.spec.provider_id or ""
+            instance_id = provider_id.split("/")[-1] if provider_id else ""
+            private_ip = next(
+                (a.address for a in (node.status.addresses or []) if a.type == "InternalIP"),
+                None,
+            )
+            if instance_id:
+                result.setdefault(ng_name, []).append(
+                    NodeInstance(instance_id=instance_id, private_ip=private_ip)
+                )
+    except Exception:
+        pass
+    return result
 
 
 def _build_upgrade_path(current_ver: str, next_ver: str) -> list[UpgradeStep]:

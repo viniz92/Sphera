@@ -13,16 +13,74 @@ function MetaCard({ label, value, sub, valueColor }) {
   );
 }
 
-function NodeGroupStatus({ status }) {
-  const color = status === "ACTIVE" ? "var(--color-text-success)"
-    : status === "DEGRADED" ? "var(--color-text-danger)"
-    : "var(--color-text-warning)";
-  return <span style={{ fontSize: 11, color }}>{status ?? "—"}</span>;
+// Extrai nome curto do node group removendo sufixo de timestamp
+function shortNgName(name) {
+  return name.replace(/[-_]?\d{14,}[a-z0-9]*$/i, "").replace(/[-_]+$/, "") || name;
 }
 
-function NodeGroupsTable({ nodeGroups }) {
+const NG_COLORS = [
+  "var(--color-text-info)",
+  "var(--color-text-success)",
+  "var(--color-text-warning)",
+  "#a78bfa",
+  "#f472b6",
+  "#34d399",
+];
+
+function DonutChart({ nodeGroups }) {
+  const total = nodeGroups.reduce((s, ng) => s + ng.desired, 0);
+  if (total === 0) {
+    return (
+      <div style={{ width: 100, height: 100, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <svg width="100" height="100" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="36" fill="none" stroke="var(--color-border-secondary)" strokeWidth="16" />
+          <text x="50" y="55" textAnchor="middle" fontSize="11" fill="var(--color-text-tertiary)">0</text>
+        </svg>
+      </div>
+    );
+  }
+
+  const r = 36;
+  const cx = 50;
+  const cy = 50;
+  const circumference = 2 * Math.PI * r;
+  let offset = 0;
+  const slices = nodeGroups.filter(ng => ng.desired > 0).map((ng, i) => {
+    const pct = ng.desired / total;
+    const dash = pct * circumference;
+    const gap = circumference - dash;
+    const slice = { color: NG_COLORS[i % NG_COLORS.length], dash, gap, offset, ng };
+    offset += dash;
+    return slice;
+  });
+
+  return (
+    <svg width="100" height="100" viewBox="0 0 100 100" style={{ transform: "rotate(-90deg)" }}>
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--color-border-tertiary)" strokeWidth="16" />
+      {slices.map((s, i) => (
+        <circle
+          key={i}
+          cx={cx} cy={cy} r={r}
+          fill="none"
+          stroke={s.color}
+          strokeWidth="16"
+          strokeDasharray={`${s.dash} ${s.gap}`}
+          strokeDashoffset={-s.offset}
+          strokeLinecap="butt"
+        />
+      ))}
+      <text x={cx} y={cy + 5} textAnchor="middle" fontSize="14" fontWeight="600"
+        fill="var(--color-text-primary)" style={{ transform: "rotate(90deg)", transformOrigin: "50px 50px" }}>
+        {total}
+      </text>
+    </svg>
+  );
+}
+
+function NodeGroupsSection({ nodeGroups }) {
   if (!nodeGroups || nodeGroups.length === 0) return null;
 
+  const withNodes = nodeGroups.filter(ng => ng.desired > 0);
   const thStyle = {
     fontSize: 11, color: "var(--color-text-tertiary)", fontWeight: 400,
     textAlign: "left", padding: "5px 8px",
@@ -31,37 +89,78 @@ function NodeGroupsTable({ nodeGroups }) {
 
   return (
     <div style={{ marginBottom: "1.25rem" }}>
-      <div style={{ fontSize: 12, fontWeight: 500, color: "var(--color-text-secondary)", letterSpacing: ".04em", textTransform: "uppercase", marginBottom: 8 }}>
+      <div style={{ fontSize: 12, fontWeight: 500, color: "var(--color-text-secondary)", letterSpacing: ".04em", textTransform: "uppercase", marginBottom: 10 }}>
         Node Groups
       </div>
-      <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
-        <thead>
-          <tr>
-            <th style={thStyle}>Nome</th>
-            <th style={{ ...thStyle, width: 130 }}>Instância</th>
-            <th style={{ ...thStyle, width: 90, textAlign: "center" }}>Min / Des / Max</th>
-            <th style={{ ...thStyle, width: 90 }}>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {nodeGroups.map((ng) => (
-            <tr key={ng.name} style={{ borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
-              <td style={{ padding: "8px 8px", fontSize: 12, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={ng.name}>
-                {ng.name}
-              </td>
-              <td style={{ padding: "8px 8px", fontSize: 12, color: "var(--color-text-secondary)" }}>
-                {ng.instance_type ?? "—"}
-              </td>
-              <td style={{ padding: "8px 8px", fontSize: 12, color: "var(--color-text-secondary)", textAlign: "center" }}>
-                {ng.min_size} / <span style={{ fontWeight: 500, color: ng.desired > 0 ? "var(--color-text-primary)" : "var(--color-text-tertiary)" }}>{ng.desired}</span> / {ng.max_size}
-              </td>
-              <td style={{ padding: "8px 8px" }}>
-                <NodeGroupStatus status={ng.status} />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+
+      <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
+        {/* Donut */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flexShrink: 0 }}>
+          <DonutChart nodeGroups={nodeGroups} />
+          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            {nodeGroups.map((ng, i) => (
+              <div key={ng.name} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: NG_COLORS[i % NG_COLORS.length], flexShrink: 0, display: "inline-block" }} />
+                <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>{shortNgName(ng.name)}</span>
+                <span style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>({ng.desired})</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Tabela */}
+        <div style={{ flex: 1, overflow: "hidden" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+            <thead>
+              <tr>
+                <th style={thStyle}>Node group</th>
+                <th style={{ ...thStyle, width: 120 }}>Instância</th>
+                <th style={{ ...thStyle, width: 90, textAlign: "center" }}>Min/Des/Max</th>
+                <th style={{ ...thStyle, width: 80 }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {nodeGroups.map((ng, i) => (
+                <>
+                  <tr key={ng.name} style={{ borderBottom: ng.instances?.length ? "none" : "0.5px solid var(--color-border-tertiary)" }}>
+                    <td style={{ padding: "8px 8px 2px", verticalAlign: "top" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ width: 8, height: 8, borderRadius: "50%", background: NG_COLORS[i % NG_COLORS.length], flexShrink: 0, display: "inline-block" }} />
+                        <span style={{ fontSize: 12, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={ng.name}>
+                          {shortNgName(ng.name)}
+                        </span>
+                      </div>
+                    </td>
+                    <td style={{ padding: "8px 8px 2px", fontSize: 12, color: "var(--color-text-secondary)", verticalAlign: "top" }}>
+                      {ng.instance_type ?? "—"}
+                    </td>
+                    <td style={{ padding: "8px 8px 2px", fontSize: 12, color: "var(--color-text-secondary)", textAlign: "center", verticalAlign: "top" }}>
+                      {ng.min_size} / <span style={{ fontWeight: 600, color: ng.desired > 0 ? "var(--color-text-primary)" : "var(--color-text-tertiary)" }}>{ng.desired}</span> / {ng.max_size}
+                    </td>
+                    <td style={{ padding: "8px 8px 2px", fontSize: 11, verticalAlign: "top", color: ng.status === "ACTIVE" ? "var(--color-text-success)" : "var(--color-text-warning)" }}>
+                      {ng.status ?? "—"}
+                    </td>
+                  </tr>
+                  {(ng.instances || []).map((inst) => (
+                    <tr key={inst.instance_id} style={{ borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+                      <td colSpan={4} style={{ padding: "2px 8px 6px 22px" }}>
+                        <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", fontFamily: "monospace" }}>
+                          {inst.instance_id}
+                          {inst.private_ip && (
+                            <span style={{ color: "var(--color-text-secondary)", marginLeft: 8 }}>
+                              {inst.private_ip}
+                            </span>
+                          )}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
@@ -109,7 +208,7 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
 
       <EolBar cluster={cluster} />
 
-      <NodeGroupsTable nodeGroups={cluster.node_groups} />
+      <NodeGroupsSection nodeGroups={cluster.node_groups} />
 
       {showUpgradePath && <UpgradePath cluster={cluster} />}
 
