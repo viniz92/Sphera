@@ -1,82 +1,70 @@
-# EKS Dashboard
+# Palantir
 
 Dashboard para visualizar versão do cluster EKS, fim do suporte, addons instalados e compatibilidade com a próxima versão do Kubernetes.
 
-## Requisitos
-
-- Docker e Docker Compose instalados
-- Kubeconfig com acesso ao cluster EKS
-- Credenciais AWS configuradas (para o boto3 consultar o EKS via API)
-
-## Como usar
+## Instalar no cluster
 
 ```bash
-# 1. Clone o projeto
-git clone <seu-repo>
-cd eks-dashboard
-
-# 2. Copie o .env
-cp .env.example .env
-
-# 3. Suba os containers
-docker compose up --build
-
-# 4. Acesse no browser
-http://localhost:5173
+kubectl apply -f https://raw.githubusercontent.com/viniz92/palantir/main/install.yaml
 ```
 
-## Fluxo
+Aguarde o pod ficar pronto:
 
-1. Faça upload do kubeconfig pela interface
-2. O backend carrega em memória (nunca salva em disco)
-3. O dashboard exibe versão, EOL, addons e compatibilidade com a próxima versão
-4. Clique na seta de cada addon para ver detalhes, links e acesso à UI (se tiver)
+```bash
+kubectl rollout status deployment/palantir -n palantir
+```
+
+Acesse o dashboard:
+
+```bash
+kubectl port-forward -n palantir svc/palantir 8080:80
+```
+
+Abra http://localhost:8080 no browser.
+
+---
+
+## Permissões AWS (IRSA)
+
+O backend usa boto3 para consultar o EKS via API. Por padrão, usa a instance profile do node.
+
+Para IRSA (recomendado), anote a ServiceAccount após instalar:
+
+```bash
+kubectl annotate serviceaccount palantir -n palantir \
+  eks.amazonaws.com/role-arn=arn:aws:iam::ACCOUNT_ID:role/palantir-role
+kubectl rollout restart deployment/palantir -n palantir
+```
+
+A role precisa de permissão `eks:DescribeCluster`, `eks:ListNodegroups`, `eks:DescribeNodegroup` e `ec2:DescribeInstances`.
+
+---
+
+## Uso local (Docker Compose)
+
+```bash
+cp .env.example .env
+docker compose up --build
+# acesse http://localhost:5173
+# faça upload do kubeconfig pela interface
+```
+
+---
 
 ## Estrutura
 
 ```
-eks-dashboard/
-├── docker-compose.yml
-├── backend/              # FastAPI + kubernetes SDK + boto3
-│   ├── app/
-│   │   ├── routers/      # cluster, addons, access
-│   │   ├── services/     # k8s.py, eks.py, compatibility.py
-│   │   └── models/       # Pydantic models
-│   └── main.py
-└── frontend/             # React + Vite
+palantir/
+├── install.yaml              # instala tudo no cluster com um comando
+├── .github/workflows/        # build e push automático para GHCR
+├── backend/                  # FastAPI + kubernetes SDK + boto3
+│   └── app/
+│       ├── routers/          # cluster, addons, access
+│       ├── services/         # k8s.py, eks.py, compatibility.py
+│       └── models/
+└── frontend/                 # React + Vite + Nginx
     └── src/
-        ├── components/   # ClusterCard, AddonTable, AddonRow, AccessBox...
-        ├── hooks/        # useCluster, useAddons
-        └── api/          # client.js (axios)
-```
-
-## Adicionando novos addons
-
-Para adicionar compatibilidade de um novo addon, edite dois arquivos:
-
-**`backend/app/services/compatibility.py`**
-```python
-COMPATIBILITY["meu-addon"] = {
-    "1.28": "ok",
-    "1.29": "min:2.0.0",
-}
-
-ADDON_META["meu-addon"] = {
-    "has_ui": True,
-    "maintainer": "...",
-    "category": "...",
-    "description": "...",
-    "doc_url": "...",
-    "changelog_url": "...",
-    "github_url": "...",
-}
-```
-
-**`backend/app/routers/access.py`** (se tiver UI)
-```python
-ADDON_SERVICE_MAP["meu-addon"] = {
-    "namespace": "meu-namespace",
-    "service": "meu-service",
-    "port": 8080,
-}
+        ├── components/
+        ├── hooks/
+        └── api/
 ```

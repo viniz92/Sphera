@@ -1,10 +1,23 @@
-import { useState } from "react";
-import { uploadKubeconfig, fetchClusterInfo } from "../api/client";
+import { useState, useEffect } from "react";
+import { fetchMode, uploadKubeconfig, fetchClusterInfo } from "../api/client";
 
 export function useCluster() {
   const [cluster, setCluster] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [mode, setMode] = useState(null);
+
+  useEffect(() => {
+    fetchMode()
+      .then(({ mode }) => {
+        setMode(mode);
+        if (mode === "in-cluster") {
+          return fetchClusterInfo().then(setCluster);
+        }
+      })
+      .catch(() => setMode("local"))
+      .finally(() => setLoading(false));
+  }, []);
 
   async function upload(file) {
     setLoading(true);
@@ -31,5 +44,5 @@ export function useCluster() {
     }
   }
 
-  return { cluster, loading, error, upload, refresh };
+  return { cluster, loading, error, mode, upload, refresh };
 }

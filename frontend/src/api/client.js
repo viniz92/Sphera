@@ -5,6 +5,11 @@ const api = axios.create({
   timeout: 30000,
 });
 
+export async function fetchMode() {
+  const { data } = await api.get("/cluster/mode");
+  return data;
+}
+
 export async function uploadKubeconfig(file) {
   const form = new FormData();
   form.append("file", file);
