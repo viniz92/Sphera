@@ -12,6 +12,15 @@
 
 Dashboard para visualizar versão do cluster EKS, fim do suporte, addons instalados e compatibilidade com a próxima versão do Kubernetes.
 
+## Screenshots
+
+<p align="center">
+  <img src="./docs/screenshot-login.svg" alt="Palantir Login" width="49%"/>
+  <img src="./docs/screenshot-dashboard.svg" alt="Palantir Dashboard" width="49%"/>
+</p>
+
+> **Login** — tela de entrada com animação do orb Nazgûl e campo de estrelas · **Dashboard** — visão completa do cluster com addons, simulação de upgrade, ciclo de vida, node groups, eventos K8s e monitor de CPU/memória
+
 ## Requisitos
 
 - Docker e Docker Compose instalados
