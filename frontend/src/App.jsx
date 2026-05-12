@@ -16,8 +16,8 @@ function useTheme() {
 
 export default function App() {
   const [token, setToken] = useState(() => localStorage.getItem("palantir_token") || "");
-  const { cluster, loading, error } = useCluster(!!token);
-  const { addons, loading: addonsLoading } = useAddons(!!cluster);
+  const { cluster, loading, refreshing, error, refresh, lastUpdated } = useCluster(!!token);
+  const { addons, loading: addonsLoading, reload: reloadAddons } = useAddons(!!cluster);
   const [theme, toggleTheme] = useTheme();
 
   useEffect(() => {
@@ -31,6 +31,11 @@ export default function App() {
   function handleLogout() {
     localStorage.removeItem("palantir_token");
     setToken("");
+  }
+
+  function handleRefresh() {
+    refresh();
+    reloadAddons();
   }
 
   if (!token) return <LoginPage onLogin={handleLogin} />;
@@ -60,6 +65,19 @@ export default function App() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.5rem 0 1rem" }}>
         <Logo size={32} showName />
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {lastUpdated && (
+            <span style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>
+              {lastUpdated.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+            </span>
+          )}
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            title="Atualizar dados"
+            style={{ background: "none", border: "0.5px solid var(--color-border-secondary)", color: refreshing ? "var(--color-text-tertiary)" : "var(--color-text-secondary)", borderRadius: "var(--border-radius-md)", padding: "4px 8px", fontSize: 14, lineHeight: 1, cursor: refreshing ? "default" : "pointer" }}
+          >
+            {refreshing ? "↻" : "↺"}
+          </button>
           <button
             onClick={toggleTheme}
             title={theme === "dark" ? "Tema claro" : "Tema escuro"}
