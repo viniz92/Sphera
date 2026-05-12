@@ -84,6 +84,9 @@ tolerations: []
 affinity: {}
 
 # Variáveis de ambiente extras para o backend
+clusterName: ""
+awsRegion: "us-east-1"
+
 extraEnv: []
   # - name: AWS_DEFAULT_REGION
   #   value: us-east-1

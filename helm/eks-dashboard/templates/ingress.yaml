@@ -24,20 +24,20 @@ spec:
     - host: {{ .Values.ingress.host }}
       http:
         paths:
-          # Frontend
-          - path: /
-            pathType: Prefix
+          {{- if index .Values.ingress.annotations "alb.ingress.kubernetes.io/actions.ssl-redirect" }}
+          - path: /*
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: ssl-redirect
+                port:
+                  name: use-annotation
+          {{- end }}
+          - path: /*
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: {{ include "eks-dashboard.fullname" . }}
                 port:
                   name: frontend
-          # Backend API — proxy via /api
-          - path: /api
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "eks-dashboard.fullname" . }}
-                port:
-                  name: backend
 {{- end }}
