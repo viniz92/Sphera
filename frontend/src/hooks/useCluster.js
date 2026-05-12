@@ -3,7 +3,7 @@ import { fetchClusterInfo } from "../api/client";
 
 export function useCluster(enabled = true) {
   const [cluster, setCluster] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!!enabled);
   const [error, setError] = useState(null);
 
   useEffect(() => {

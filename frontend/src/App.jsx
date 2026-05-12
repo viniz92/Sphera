@@ -43,6 +43,18 @@ export default function App() {
     );
   }
 
+  if (!cluster) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "60vh", flexDirection: "column", gap: 12, color: "var(--color-text-secondary)" }}>
+        <span style={{ fontSize: 28 }}>⚠</span>
+        <span>Não foi possível conectar ao cluster.</span>
+        <button onClick={handleLogout} style={{ fontSize: 12, marginTop: 4, background: "none", border: "0.5px solid var(--color-border-secondary)", color: "var(--color-text-secondary)", borderRadius: "var(--border-radius-md)", padding: "4px 12px", cursor: "pointer" }}>
+          Voltar ao login
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div style={{ padding: "0 2rem" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.5rem 0 1rem" }}>
