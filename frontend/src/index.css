@@ -1,0 +1,57 @@
+/* ─── Reset & Base ───────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  background: var(--color-background-base);
+  color: var(--color-text-primary);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ─── Design Tokens — Dark Theme ─────────────────────────────────────────── */
+:root {
+  /* Background */
+  --color-background-base:       #0d0d0d;
+  --color-background-primary:    #141414;
+  --color-background-secondary:  #1c1c1c;
+
+  --color-background-danger:     rgba(239, 68,  68,  0.12);
+  --color-background-warning:    rgba(245, 158, 11,  0.12);
+  --color-background-success:    rgba(34,  197, 94,  0.12);
+  --color-background-info:       rgba(59,  130, 246, 0.12);
+
+  /* Text */
+  --color-text-primary:          #f0f0f0;
+  --color-text-secondary:        #888888;
+  --color-text-tertiary:         #4d4d4d;
+
+  --color-text-danger:           #f87171;
+  --color-text-warning:          #fbbf24;
+  --color-text-success:          #4ade80;
+  --color-text-info:             #60a5fa;
+
+  /* Border */
+  --color-border-secondary:      #2a2a2a;
+  --color-border-tertiary:       #1f1f1f;
+  --color-border-info:           rgba(59, 130, 246, 0.4);
+
+  /* Border Radius */
+  --border-radius-sm:            4px;
+  --border-radius-md:            6px;
+  --border-radius-lg:            10px;
+}
