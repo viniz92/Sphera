@@ -43,7 +43,18 @@ export function AddonRow({ addon }) {
           </button>
         </td>
         <td style={{ padding: "10px 8px", verticalAlign: "middle" }}>
-          <span style={{ fontWeight: 700, fontSize: 13 }}>{addon.name}</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+            {addon.healthy === true && (
+              <span title="Rodando" style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--color-text-success)", flexShrink: 0, display: "inline-block" }} />
+            )}
+            {addon.healthy === false && (
+              <span title="Com problema" style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--color-text-danger)", flexShrink: 0, display: "inline-block" }} />
+            )}
+            {addon.healthy === null || addon.healthy === undefined ? (
+              <span title="Status desconhecido" style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--color-text-tertiary)", flexShrink: 0, display: "inline-block" }} />
+            ) : null}
+            <span style={{ fontWeight: 700, fontSize: 13 }}>{addon.name}</span>
+          </span>
         </td>
         <td style={{ width: 80, padding: "10px 8px", verticalAlign: "middle" }}>
           <span style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>{addon.version}</span>
