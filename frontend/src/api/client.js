@@ -38,3 +38,13 @@ export async function fetchAddonAccess(addonName) {
   const { data } = await api.get(`/access/${addonName}`);
   return data;
 }
+
+export async function fetchEvents() {
+  const { data } = await api.get("/events/");
+  return data;
+}
+
+export async function fetchNodeMetrics() {
+  const { data } = await api.get("/metrics/nodes");
+  return data;
+}

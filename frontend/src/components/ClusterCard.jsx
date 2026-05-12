@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { EolBar } from "./EolBar";
 import { AddonTable } from "./AddonTable";
+import { EventsPanel } from "./EventsPanel";
+import { MonitorPanel } from "./MonitorPanel";
 
 function MetaCard({ label, value, sub, valueColor }) {
   return (
@@ -230,8 +232,15 @@ function UpgradePath({ cluster }) {
   );
 }
 
+const TABS = [
+  { id: "nos", label: "Nós" },
+  { id: "eventos", label: "Eventos" },
+  { id: "monitor", label: "Monitor" },
+];
+
 export function ClusterCard({ cluster, addons, addonsLoading }) {
   const [showUpgradePath, setShowUpgradePath] = useState(false);
+  const [activeTab, setActiveTab] = useState("nos");
   const days = cluster.eol_days_remaining;
   const eolBadgeColor = days < 60 ? "var(--color-text-danger)" : days < 180 ? "var(--color-text-warning)" : "var(--color-text-success)";
   const eolBadgeBg   = days < 60 ? "var(--color-background-danger)" : days < 180 ? "var(--color-background-warning)" : "var(--color-background-success)";
@@ -268,7 +277,26 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
       </div>
 
       <EolBar cluster={cluster} />
-      <NodeGroupsSection nodeGroups={cluster.node_groups} />
+
+      {/* Tabs: Nós / Eventos / Monitor */}
+      <div style={{ display: "flex", borderBottom: "1px solid var(--color-border-tertiary)", marginBottom: "1rem" }}>
+        {TABS.map(tab => (
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
+            padding: "7px 18px", fontSize: 12, fontWeight: activeTab === tab.id ? 600 : 400,
+            color: activeTab === tab.id ? "var(--color-text-info)" : "var(--color-text-secondary)",
+            background: "none", border: "none", cursor: "pointer",
+            borderBottom: activeTab === tab.id ? "2px solid var(--color-text-info)" : "2px solid transparent",
+            marginBottom: -1,
+          }}>
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === "nos" && <NodeGroupsSection nodeGroups={cluster.node_groups} />}
+      {activeTab === "eventos" && <EventsPanel />}
+      {activeTab === "monitor" && <MonitorPanel />}
+
       {showUpgradePath && <UpgradePath cluster={cluster} />}
 
       {addonsLoading

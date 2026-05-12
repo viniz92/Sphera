@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from app.routers import cluster, addons, access, auth as auth_router
+from app.routers import cluster, addons, access, auth as auth_router, events, node_metrics
 from app.services.auth import is_valid
 
 UNPROTECTED = {"/health", "/api/auth/login"}
@@ -36,6 +36,8 @@ app.include_router(auth_router.router, prefix="/api/auth", tags=["auth"])
 app.include_router(cluster.router, prefix="/api/cluster", tags=["cluster"])
 app.include_router(addons.router, prefix="/api/addons", tags=["addons"])
 app.include_router(access.router, prefix="/api/access", tags=["access"])
+app.include_router(events.router, prefix="/api/events", tags=["events"])
+app.include_router(node_metrics.router, prefix="/api/metrics", tags=["metrics"])
 
 
 @app.get("/health")
