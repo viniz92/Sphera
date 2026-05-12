@@ -24,7 +24,7 @@ export default function App() {
   }
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 1rem" }}>
+    <div style={{ padding: "0 2rem" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.5rem 0 1rem" }}>
         <h1 style={{ fontSize: 16, fontWeight: 500, margin: 0 }}>Palantir</h1>
         {mode === "local" && (

@@ -11,6 +11,9 @@ COMPATIBILITY: dict[str, dict[str, str]] = {
         "1.29": "min:1.16.0",
         "1.30": "min:1.18.0",
         "1.31": "min:1.19.0",
+        "1.32": "min:1.19.2",
+        "1.33": "min:1.20.0",
+        "1.34": "min:1.21.0",
     },
     "coredns": {
         "1.27": "ok",
@@ -18,6 +21,9 @@ COMPATIBILITY: dict[str, dict[str, str]] = {
         "1.29": "ok",
         "1.30": "ok",
         "1.31": "ok",
+        "1.32": "ok",
+        "1.33": "ok",
+        "1.34": "ok",
     },
     "kube-proxy": {
         "1.27": "ok",
@@ -25,6 +31,9 @@ COMPATIBILITY: dict[str, dict[str, str]] = {
         "1.29": "min:1.29.0",
         "1.30": "min:1.30.0",
         "1.31": "min:1.31.0",
+        "1.32": "min:1.32.0",
+        "1.33": "min:1.33.0",
+        "1.34": "min:1.34.0",
     },
     "aws-load-balancer-controller": {
         "1.27": "ok",
@@ -32,6 +41,9 @@ COMPATIBILITY: dict[str, dict[str, str]] = {
         "1.29": "ok",
         "1.30": "ok",
         "1.31": "ok",
+        "1.32": "min:2.8.0",
+        "1.33": "min:2.9.0",
+        "1.34": "min:2.10.0",
     },
     "cluster-autoscaler": {
         "1.27": "ok",
@@ -39,6 +51,9 @@ COMPATIBILITY: dict[str, dict[str, str]] = {
         "1.29": "min:1.29.0",
         "1.30": "min:1.30.0",
         "1.31": "min:1.31.0",
+        "1.32": "min:1.32.0",
+        "1.33": "min:1.33.0",
+        "1.34": "min:1.34.0",
     },
     "ebs-csi-driver": {
         "1.27": "ok",
@@ -46,6 +61,9 @@ COMPATIBILITY: dict[str, dict[str, str]] = {
         "1.29": "min:1.25.0",
         "1.30": "min:1.26.0",
         "1.31": "min:1.27.0",
+        "1.32": "min:1.28.0",
+        "1.33": "min:1.29.0",
+        "1.34": "min:1.30.0",
     },
     "aws-ebs-csi-driver": {
         "1.27": "ok",
@@ -53,6 +71,9 @@ COMPATIBILITY: dict[str, dict[str, str]] = {
         "1.29": "min:1.25.0",
         "1.30": "min:1.26.0",
         "1.31": "min:1.27.0",
+        "1.32": "min:1.28.0",
+        "1.33": "min:1.29.0",
+        "1.34": "min:1.30.0",
     },
 }
 
