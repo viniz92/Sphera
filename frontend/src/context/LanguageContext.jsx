@@ -6,10 +6,9 @@ const LanguageContext = createContext();
 export function LanguageProvider({ children }) {
   const [lang, setLang] = useState(() => localStorage.getItem("palantir_lang") || "pt");
 
-  function toggle() {
-    const next = lang === "pt" ? "en" : "pt";
-    localStorage.setItem("palantir_lang", next);
-    setLang(next);
+  function setLanguage(code) {
+    localStorage.setItem("palantir_lang", code);
+    setLang(code);
   }
 
   function t(key) {
@@ -17,7 +16,7 @@ export function LanguageProvider({ children }) {
   }
 
   return (
-    <LanguageContext.Provider value={{ lang, toggle, t }}>
+    <LanguageContext.Provider value={{ lang, setLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );
