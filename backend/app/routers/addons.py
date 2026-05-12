@@ -10,21 +10,39 @@ router = APIRouter()
 # Rename map: deployment/daemonset name → canonical addon name
 # Used only to normalise names — NOT required for discovery
 ADDON_NAME_MAP: dict[str, str] = {
+    # AWS / kube-system
     "aws-node": "vpc-cni",
     "coredns": "coredns",
     "kube-proxy": "kube-proxy",
     "aws-load-balancer-controller": "aws-load-balancer-controller",
     "cluster-autoscaler": "cluster-autoscaler",
     "ebs-csi-controller": "ebs-csi-driver",
+    "ebs-csi-node": "ebs-csi-driver",
+    "ebs-csi-node-windows": "ebs-csi-driver",
     "aws-ebs-csi-driver": "ebs-csi-driver",
+    "metrics-server": "metrics-server",
+    # ArgoCD — todos os sub-componentes agrupados
     "argocd-server": "argocd",
+    "argocd-dex-server": "argocd",
+    "argocd-redis": "argocd",
+    "argocd-repo-server": "argocd",
+    "argocd-notifications-controller": "argocd",
+    "argocd-applicationset-controller": "argocd",
+    "argocd-image-updater": "argocd",
+    # Argo Workflows
+    "argo-workflows-server": "argo-workflows",
+    "argo-workflows-workflow-controller": "argo-workflows",
+    # cert-manager — sub-componentes agrupados
+    "cert-manager": "cert-manager",
+    "cert-manager-cainjector": "cert-manager",
+    "cert-manager-webhook": "cert-manager",
+    "cert-manager-controller": "cert-manager",
+    # Observabilidade
     "grafana": "grafana",
     "kiali": "kiali",
     "prometheus-server": "prometheus",
     "jaeger": "jaeger",
-    "palantir-eks-dashboard": "palantir",
-    "metrics-server": "metrics-server",
-    "cert-manager": "cert-manager",
+    # Outros
     "external-dns": "external-dns",
     "ingress-nginx-controller": "ingress-nginx",
     "nginx-ingress-controller": "ingress-nginx",
@@ -34,6 +52,7 @@ ADDON_NAME_MAP: dict[str, str] = {
     "sealed-secrets-controller": "sealed-secrets",
     "reloader": "reloader",
     "descheduler": "descheduler",
+    "palantir-eks-dashboard": "palantir",
 }
 
 # Namespaces scanned fully (every deployment/daemonset is treated as an addon)

@@ -100,6 +100,13 @@ ADDON_META: dict[str, dict] = {
         "changelog_url": "https://github.com/kiali/kiali/releases",
         "github_url": "https://github.com/kiali/kiali",
     },
+    "argo-workflows": {
+        "has_ui": True, "maintainer": "CNCF / Argo Project", "category": "GitOps / CD", "update_freq": "Mensal",
+        "description": "Motor de workflows para Kubernetes. Executa DAGs e pipelines de CI/CD como pods nativos.",
+        "doc_url": "https://argoproj.github.io/argo-workflows/",
+        "changelog_url": "https://github.com/argoproj/argo-workflows/releases",
+        "github_url": "https://github.com/argoproj/argo-workflows",
+    },
     "palantir": {
         "has_ui": True, "maintainer": "Seru", "category": "Observabilidade / EKS", "update_freq": "Contínuo",
         "description": "Dashboard de monitoramento do cluster EKS — versões, addons, compatibilidade e node groups.",
