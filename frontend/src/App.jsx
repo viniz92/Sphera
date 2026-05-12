@@ -94,9 +94,32 @@ export default function App() {
           <button
             onClick={toggleLang}
             title={lang === "pt" ? "Switch to English" : "Mudar para Português"}
-            style={{ background: "none", border: "0.5px solid var(--color-border-secondary)", color: "var(--color-text-secondary)", borderRadius: "var(--border-radius-md)", padding: "3px 7px", fontSize: 16, lineHeight: 1, cursor: "pointer" }}
+            style={{ background: "none", border: "0.5px solid var(--color-border-secondary)", borderRadius: "var(--border-radius-md)", padding: "3px 6px", lineHeight: 1, cursor: "pointer", display: "flex", alignItems: "center" }}
           >
-            {lang === "pt" ? "🇧🇷" : "🇺🇸"}
+            {lang === "pt" ? (
+              <svg width="22" height="15" viewBox="0 0 22 15" xmlns="http://www.w3.org/2000/svg">
+                <rect width="22" height="15" rx="2" fill="#009c3b"/>
+                <polygon points="11,1.5 20.5,7.5 11,13.5 1.5,7.5" fill="#fedf00"/>
+                <circle cx="11" cy="7.5" r="3.2" fill="#002776"/>
+                <path d="M7.9 7.1 Q11 5.5 14.1 7.1" fill="none" stroke="#fff" stroke-width="0.9"/>
+              </svg>
+            ) : (
+              <svg width="22" height="15" viewBox="0 0 22 15" xmlns="http://www.w3.org/2000/svg">
+                <rect width="22" height="15" rx="2" fill="#B22234"/>
+                <rect y="1.15" width="22" height="1.15" fill="#fff"/>
+                <rect y="3.46" width="22" height="1.15" fill="#fff"/>
+                <rect y="5.77" width="22" height="1.15" fill="#fff"/>
+                <rect y="8.08" width="22" height="1.15" fill="#fff"/>
+                <rect y="10.38" width="22" height="1.15" fill="#fff"/>
+                <rect y="12.69" width="22" height="1.15" fill="#fff"/>
+                <rect width="8.8" height="8.08" rx="2" fill="#3C3B6E"/>
+                <g fill="#fff" font-size="1.6" text-anchor="middle">
+                  <text x="1.5" y="2.2">★</text><text x="4.4" y="2.2">★</text><text x="7.3" y="2.2">★</text>
+                  <text x="2.95" y="4">★</text><text x="5.85" y="4">★</text>
+                  <text x="1.5" y="5.8">★</text><text x="4.4" y="5.8">★</text><text x="7.3" y="5.8">★</text>
+                </g>
+              </svg>
+            )}
           </button>
           <button
             onClick={handleLogout}
