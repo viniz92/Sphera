@@ -1,44 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useCluster } from "./hooks/useCluster";
 import { useAddons } from "./hooks/useAddons";
 import { UploadKubeconfig } from "./components/UploadKubeconfig";
 import { ClusterCard } from "./components/ClusterCard";
-
-function useTheme() {
-  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "dark");
-
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-  }, [theme]);
-
-  return [theme, () => setTheme((t) => (t === "dark" ? "light" : "dark"))];
-}
-
-function formatLastUpdated(date) {
-  if (!date) return null;
-  return date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-}
+import { Logo } from "./components/Logo";
 
 export default function App() {
-  const { cluster, loading, refreshing, error, mode, upload, refresh, lastUpdated } = useCluster();
-  const { addons, loading: addonsLoading, reload: reloadAddons } = useAddons(!!cluster);
-  const [theme, toggleTheme] = useTheme();
+  const { cluster, loading, error, upload } = useCluster();
+  const { addons, loading: addonsLoading } = useAddons(!!cluster);
+  const [reset, setReset] = useState(false);
 
-  function handleRefresh() {
-    refresh();
-    reloadAddons();
+  function handleReset() {
+    window.location.reload();
   }
 
-  if (loading) {
-    return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "60vh", color: "var(--color-text-secondary)" }}>
-        Conectando ao cluster...
-      </div>
-    );
-  }
-
-  if (!cluster) {
+  if (!cluster || reset) {
     return (
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 1rem" }}>
         <UploadKubeconfig onUpload={upload} loading={loading} error={error} />
@@ -47,48 +23,22 @@ export default function App() {
   }
 
   return (
-    <div style={{ padding: "0 2rem" }}>
+    <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 1rem" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.5rem 0 1rem" }}>
-        <h1 style={{ fontSize: 16, fontWeight: 500, margin: 0 }}>Palantir</h1>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {lastUpdated && (
-            <span style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>
-              atualizado às {formatLastUpdated(lastUpdated)}
-            </span>
-          )}
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            title="Atualizar dados"
-            style={{
-              background: "none", border: "0.5px solid var(--color-border-secondary)",
-              color: refreshing ? "var(--color-text-tertiary)" : "var(--color-text-secondary)",
-              borderRadius: "var(--border-radius-md)", padding: "4px 8px",
-              fontSize: 13, lineHeight: 1, cursor: refreshing ? "default" : "pointer",
-              transition: "opacity 0.2s",
-            }}
-          >
-            {refreshing ? "↻" : "↺"}
-          </button>
-          <button
-            onClick={toggleTheme}
-            title={theme === "dark" ? "Mudar para tema claro" : "Mudar para tema escuro"}
-            style={{
-              background: "none", border: "0.5px solid var(--color-border-secondary)",
-              color: "var(--color-text-secondary)", borderRadius: "var(--border-radius-md)",
-              padding: "4px 8px", fontSize: 14, lineHeight: 1, cursor: "pointer",
-            }}
-          >
-            {theme === "dark" ? "☀" : "☾"}
-          </button>
-          {mode === "local" && (
-            <button onClick={() => window.location.reload()} style={{ fontSize: 12, cursor: "pointer", background: "none", border: "0.5px solid var(--color-border-secondary)", color: "var(--color-text-secondary)", padding: "4px 10px", borderRadius: "var(--border-radius-md)" }}>
-              Trocar cluster
-            </button>
-          )}
-        </div>
+        <Logo size={36} showName />
+        <button
+          onClick={handleReset}
+          style={{ fontSize: 12, padding: "4px 12px", borderRadius: "var(--border-radius-md)", border: "0.5px solid var(--color-border-secondary)", background: "none", cursor: "pointer", color: "var(--color-text-secondary)" }}
+        >
+          Trocar cluster
+        </button>
       </div>
-      <ClusterCard cluster={cluster} addons={addons} addonsLoading={addonsLoading} />
+      <ClusterCard
+        cluster={cluster}
+        addons={addons}
+        addonsLoading={addonsLoading}
+        onReset={handleReset}
+      />
     </div>
   );
 }

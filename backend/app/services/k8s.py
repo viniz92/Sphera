@@ -106,7 +106,7 @@ def get_cluster_name() -> str:
             return name.split("/")[-1] if "/" in name else name
     except Exception:
         pass
-    return os.getenv("CLUSTER_NAME") or os.getenv("POD_NAMESPACE", "unknown-cluster")
+    return os.getenv("POD_NAMESPACE", "unknown-cluster")
 
 
 def get_region_from_kubeconfig() -> str:

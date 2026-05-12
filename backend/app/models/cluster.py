@@ -2,24 +2,10 @@ from pydantic import BaseModel
 from typing import Optional
 
 
-class NodeInstance(BaseModel):
-    instance_id: str
-    private_ip: Optional[str] = None
-
-
 class NodeGroup(BaseModel):
     name: str
+    node_count: int
     instance_type: Optional[str] = None
-    desired: int = 0
-    min_size: int = 0
-    max_size: int = 0
-    status: Optional[str] = None
-    instances: list[NodeInstance] = []
-
-
-class UpgradeStep(BaseModel):
-    version: str
-    addons_to_update: list[dict] = []
 
 
 class ClusterInfo(BaseModel):
@@ -35,4 +21,3 @@ class ClusterInfo(BaseModel):
     eol_date: Optional[str] = None
     eol_days_remaining: Optional[int] = None
     eol_percent_elapsed: Optional[int] = None
-    upgrade_path: list[UpgradeStep] = []

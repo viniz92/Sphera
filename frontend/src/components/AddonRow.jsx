@@ -43,23 +43,7 @@ export function AddonRow({ addon }) {
           </button>
         </td>
         <td style={{ padding: "10px 8px", verticalAlign: "middle" }}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-            <span style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 2, flexShrink: 0 }}>
-              <span
-                title={addon.healthy === true ? "Rodando" : addon.healthy === false ? "Com problema" : "Status desconhecido"}
-                style={{
-                  width: 7, height: 7, borderRadius: "50%", display: "inline-block",
-                  background: addon.healthy === true ? "var(--color-text-success)" : addon.healthy === false ? "var(--color-text-danger)" : "var(--color-text-tertiary)",
-                }}
-              />
-              {addon.replicas_desired != null && (
-                <span style={{ fontSize: 9, color: addon.healthy === false ? "var(--color-text-danger)" : "var(--color-text-tertiary)", lineHeight: 1, whiteSpace: "nowrap" }}>
-                  {addon.replicas_available}/{addon.replicas_desired}
-                </span>
-              )}
-            </span>
-            <span style={{ fontWeight: 700, fontSize: 13 }}>{addon.name}</span>
-          </span>
+          <span style={{ fontWeight: 500, fontSize: 13 }}>{addon.name}</span>
         </td>
         <td style={{ width: 80, padding: "10px 8px", verticalAlign: "middle" }}>
           <span style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>{addon.version}</span>

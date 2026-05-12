@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { Logo } from "./Logo";
 
 export function UploadKubeconfig({ onUpload, loading, error }) {
   const inputRef = useRef();
@@ -17,7 +18,9 @@ export function UploadKubeconfig({ onUpload, loading, error }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "60vh", gap: 24 }}>
-      <div style={{ fontSize: 32, fontWeight: 500, color: "var(--color-text-primary)" }}>EKS Dashboard</div>
+
+      <Logo size={80} showName />
+
       <p style={{ fontSize: 14, color: "var(--color-text-secondary)", textAlign: "center", maxWidth: 360 }}>
         Faça upload do seu kubeconfig para visualizar o cluster, addons e compatibilidade com a próxima versão do EKS.
       </p>
@@ -62,6 +65,10 @@ export function UploadKubeconfig({ onUpload, loading, error }) {
 
       <p style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>
         O arquivo nunca é salvo — processado apenas em memória.
+      </p>
+
+      <p style={{ fontSize: 10, color: "var(--color-text-tertiary)", opacity: 0.5, letterSpacing: "0.1em" }}>
+        ONE DASHBOARD TO RULE THEM ALL
       </p>
     </div>
   );

@@ -1,23 +1,11 @@
-import os
-from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import cluster, addons, access
-from app.services.k8s import init_in_cluster
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    if os.getenv("RUNNING_IN_CLUSTER") == "true":
-        init_in_cluster()
-    yield
-
 
 app = FastAPI(
-    title="Palantir API",
-    description="Backend para o Palantir — EKS versões, addons e compatibilidade",
+    title="EKS Dashboard API",
+    description="Backend para o EKS Dashboard — versões, addons e compatibilidade",
     version="1.0.0",
-    lifespan=lifespan,
 )
 
 app.add_middleware(

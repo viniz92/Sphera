@@ -83,17 +83,10 @@ nodeSelector: {}
 tolerations: []
 affinity: {}
 
-# Nome do cluster EKS (obrigatório ao rodar in-cluster)
-# Usado pelo backend para chamar eks:DescribeCluster
-clusterName: ""
-
-# Região AWS do cluster
-awsRegion: "us-east-1"
-
 # Variáveis de ambiente extras para o backend
 extraEnv: []
-  # - name: EXEMPLO
-  #   value: valor
+  # - name: AWS_DEFAULT_REGION
+  #   value: us-east-1
 
 # Pod annotations
 podAnnotations: {}
