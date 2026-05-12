@@ -130,12 +130,12 @@ function NodeGroupsSection({ nodeGroups }) {
                           </span>
                           {allReady && (
                             <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 10, fontWeight: 600, background: "var(--color-background-success)", color: "var(--color-text-success)", flexShrink: 0 }}>
-                              ✓ {readyCount}/{instances.length} Ready
+                              ✓ {readyCount}/{instances.length}
                             </span>
                           )}
                           {someNotReady && (
                             <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 10, fontWeight: 600, background: "var(--color-background-danger)", color: "var(--color-text-danger)", flexShrink: 0 }}>
-                              {readyCount}/{instances.length} Ready
+                              ✗ {readyCount}/{instances.length}
                             </span>
                           )}
                         </div>
@@ -233,6 +233,7 @@ function UpgradePath({ cluster }) {
 }
 
 const TABS = [
+  { id: "addons", label: "Addons" },
   { id: "nos", label: "Nós" },
   { id: "eventos", label: "Eventos" },
   { id: "monitor", label: "Monitor" },
@@ -240,7 +241,7 @@ const TABS = [
 
 export function ClusterCard({ cluster, addons, addonsLoading }) {
   const [showUpgradePath, setShowUpgradePath] = useState(false);
-  const [activeTab, setActiveTab] = useState("nos");
+  const [activeTab, setActiveTab] = useState("addons");
   const days = cluster.eol_days_remaining;
   const eolBadgeColor = days < 60 ? "var(--color-text-danger)" : days < 180 ? "var(--color-text-warning)" : "var(--color-text-success)";
   const eolBadgeBg   = days < 60 ? "var(--color-background-danger)" : days < 180 ? "var(--color-background-warning)" : "var(--color-background-success)";
@@ -293,16 +294,15 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
         ))}
       </div>
 
+      {activeTab === "addons" && (addonsLoading
+        ? <div style={{ fontSize: 13, color: "var(--color-text-secondary)", padding: "1rem 0" }}>Carregando addons...</div>
+        : <AddonTable addons={addons} cluster={cluster} />
+      )}
       {activeTab === "nos" && <NodeGroupsSection nodeGroups={cluster.node_groups} />}
       {activeTab === "eventos" && <EventsPanel />}
       {activeTab === "monitor" && <MonitorPanel />}
 
       {showUpgradePath && <UpgradePath cluster={cluster} />}
-
-      {addonsLoading
-        ? <div style={{ fontSize: 13, color: "var(--color-text-secondary)", padding: "1rem 0" }}>Carregando addons...</div>
-        : <AddonTable addons={addons} cluster={cluster} />
-      }
     </div>
   );
 }
