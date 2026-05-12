@@ -74,9 +74,9 @@ export default function App() {
             onClick={handleRefresh}
             disabled={refreshing}
             title="Atualizar dados"
-            style={{ background: "none", border: "0.5px solid var(--color-border-secondary)", color: refreshing ? "var(--color-text-tertiary)" : "var(--color-text-secondary)", borderRadius: "var(--border-radius-md)", padding: "4px 10px", fontSize: 12, lineHeight: 1, cursor: refreshing ? "default" : "pointer", display: "flex", alignItems: "center", gap: 5 }}
+            style={{ background: "var(--color-background-info)", border: "1px solid var(--color-text-info)", color: "var(--color-text-info)", borderRadius: "var(--border-radius-md)", padding: "5px 12px", fontSize: 12, fontWeight: 500, lineHeight: 1, cursor: refreshing ? "default" : "pointer", display: "flex", alignItems: "center", gap: 6, opacity: refreshing ? 0.6 : 1 }}
           >
-            <span style={{ fontSize: 14, display: "inline-block", animation: refreshing ? "spin-slow 1s linear infinite" : "none" }}>{refreshing ? "↻" : "↺"}</span>
+            <span style={{ fontSize: 15, display: "inline-block", animation: refreshing ? "spin-slow 1s linear infinite" : "none" }}>{refreshing ? "↻" : "↺"}</span>
             {refreshing ? "Atualizando..." : "Atualizar"}
           </button>
           <button
