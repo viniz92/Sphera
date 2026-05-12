@@ -121,6 +121,13 @@ ADDON_META: dict[str, dict] = {
         "changelog_url": "https://github.com/kiali/kiali/releases",
         "github_url": "https://github.com/kiali/kiali",
     },
+    "palantir": {
+        "has_ui": True, "maintainer": "Seru", "category": "Observabilidade / EKS", "update_freq": "Contínuo",
+        "description": "Dashboard de monitoramento do cluster EKS — versões, addons, compatibilidade e node groups.",
+        "doc_url": "https://github.com/viniz92/palantir",
+        "changelog_url": "https://github.com/viniz92/palantir/releases",
+        "github_url": "https://github.com/viniz92/palantir",
+    },
 }
 
 

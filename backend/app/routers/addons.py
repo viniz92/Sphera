@@ -21,6 +21,7 @@ ADDON_NAME_MAP = {
     "kiali": "kiali",
     "prometheus-server": "prometheus",
     "jaeger": "jaeger",
+    "palantir-eks-dashboard": "palantir",
 }
 
 
