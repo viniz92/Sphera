@@ -3,20 +3,21 @@ from datetime import date, datetime
 from app.services.k8s import get_cluster_name, get_region_from_kubeconfig
 from app.models.cluster import ClusterInfo, NodeGroup
 
-# Datas de release e EOL por versão do EKS
+# Datas de suporte padrão (gratuito) por versão do EKS
 # Fonte: https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html
+# eol = fim do suporte padrão (free). Suporte estendido (pago) dura +12 meses após esta data.
 EKS_LIFECYCLE: dict[str, dict] = {
     "1.24": {"release": "2022-11-15", "eol": "2024-01-31"},
     "1.25": {"release": "2023-02-22", "eol": "2024-05-01"},
     "1.26": {"release": "2023-04-11", "eol": "2024-06-11"},
     "1.27": {"release": "2023-07-25", "eol": "2024-07-01"},
-    "1.28": {"release": "2023-11-16", "eol": "2025-11-01"},
-    "1.29": {"release": "2024-01-23", "eol": "2026-03-01"},
-    "1.30": {"release": "2024-05-23", "eol": "2026-07-01"},
-    "1.31": {"release": "2024-09-25", "eol": "2026-10-01"},
-    "1.32": {"release": "2025-01-23", "eol": "2027-03-01"},
-    "1.33": {"release": "2025-04-24", "eol": "2027-06-01"},
-    "1.34": {"release": "2025-08-01", "eol": "2027-10-01"},
+    "1.28": {"release": "2023-11-16", "eol": "2025-03-26"},
+    "1.29": {"release": "2024-01-23", "eol": "2025-07-01"},
+    "1.30": {"release": "2024-05-23", "eol": "2025-07-23"},
+    "1.31": {"release": "2024-09-25", "eol": "2025-11-26"},
+    "1.32": {"release": "2025-01-23", "eol": "2026-03-23"},
+    "1.33": {"release": "2025-04-24", "eol": "2026-07-29"},
+    "1.34": {"release": "2025-08-01", "eol": "2026-12-02"},
 }
 
 NEXT_VERSION: dict[str, str] = {
