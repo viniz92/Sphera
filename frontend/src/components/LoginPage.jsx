@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useLanguage } from "../context/LanguageContext";
 
 function Stars() {
   const stars = useMemo(() => Array.from({ length: 120 }, (_, i) => ({
@@ -69,6 +70,7 @@ function AnimatedLogo() {
 }
 
 export function LoginPage({ onLogin }) {
+  const { t } = useLanguage();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -85,14 +87,14 @@ export function LoginPage({ onLogin }) {
         body: JSON.stringify({ username, password }),
       });
       if (!res.ok) {
-        setError("Usuário ou senha incorretos");
+        setError(t("loginError"));
         return;
       }
       const { token } = await res.json();
       localStorage.setItem("palantir_token", token);
       onLogin(token);
     } catch {
-      setError("Erro ao conectar ao servidor");
+      setError(t("connectionFailed"));
     } finally {
       setLoading(false);
     }
@@ -126,12 +128,12 @@ export function LoginPage({ onLogin }) {
         {/* Form */}
         <form onSubmit={handleSubmit} style={{ width: "100%", display: "flex", flexDirection: "column", gap: 12 }}>
           <input
-            type="text" placeholder="Usuário" autoComplete="username"
+            type="text" placeholder={t("username")} autoComplete="username"
             value={username} onChange={e => setUsername(e.target.value)}
             style={inputStyle} required
           />
           <input
-            type="password" placeholder="Senha" autoComplete="current-password"
+            type="password" placeholder={t("password")} autoComplete="current-password"
             value={password} onChange={e => setPassword(e.target.value)}
             style={inputStyle} required
           />
@@ -152,7 +154,7 @@ export function LoginPage({ onLogin }) {
             }}
           >
             {loading && <span className="spin-anim" style={{ display: "inline-block", fontSize: 14 }}>◌</span>}
-            {loading ? "Entrando..." : "Entrar"}
+            {loading ? t("loggingIn") : t("loginBtn")}
           </button>
         </form>
       </div>

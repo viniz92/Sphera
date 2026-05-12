@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { fetchNodeMetrics } from "../api/client";
+import { useLanguage } from "../context/LanguageContext";
 
 function UsageBar({ percent, color }) {
   const pct = Math.min(100, percent ?? 0);
@@ -21,6 +22,7 @@ function shortNodeName(name) {
 }
 
 export function MonitorPanel() {
+  const { t } = useLanguage();
   const [metrics, setMetrics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,12 +34,12 @@ export function MonitorPanel() {
         if (data.length === 0) setUnavailable(true);
         setMetrics(data);
       })
-      .catch(() => setError("Erro ao buscar métricas"))
+      .catch(() => setError(t("errorMetrics")))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) {
-    return <div style={{ padding: "1.5rem 0", fontSize: 13, color: "var(--color-text-secondary)" }}>Carregando métricas...</div>;
+    return <div style={{ padding: "1.5rem 0", fontSize: 13, color: "var(--color-text-secondary)" }}>{t("loadingMetrics")}</div>;
   }
   if (error) {
     return <div style={{ padding: "1.5rem 0", fontSize: 13, color: "var(--color-text-danger)" }}>{error}</div>;
@@ -45,7 +47,7 @@ export function MonitorPanel() {
   if (unavailable || metrics.length === 0) {
     return (
       <div style={{ padding: "1.5rem 0", fontSize: 13, color: "var(--color-text-secondary)" }}>
-        Metrics Server não disponível neste cluster. Instale o <code style={{ fontSize: 12 }}>metrics-server</code> para habilitar o monitoramento.
+        {t("metricsUnavailable")}
       </div>
     );
   }
@@ -60,7 +62,7 @@ export function MonitorPanel() {
     <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
       <thead>
         <tr>
-          <th style={thStyle}>Nó</th>
+          <th style={thStyle}>{t("nodeCol")}</th>
           <th style={{ ...thStyle, width: "32%" }}>CPU</th>
           <th style={{ ...thStyle, width: "32%" }}>Memória</th>
         </tr>

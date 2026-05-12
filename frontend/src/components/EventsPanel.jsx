@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { fetchEvents } from "../api/client";
+import { useLanguage } from "../context/LanguageContext";
 
 const REASON_COLOR = {
   OOMKilling: "var(--color-text-danger)",
@@ -30,6 +31,7 @@ function timeAgo(isoStr) {
 }
 
 export function EventsPanel() {
+  const { t } = useLanguage();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -37,12 +39,12 @@ export function EventsPanel() {
   useEffect(() => {
     fetchEvents()
       .then(setEvents)
-      .catch(() => setError("Erro ao carregar eventos"))
+      .catch(() => setError(t("errorEvents")))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) {
-    return <div style={{ padding: "1.5rem 0", fontSize: 13, color: "var(--color-text-secondary)" }}>Carregando eventos...</div>;
+    return <div style={{ padding: "1.5rem 0", fontSize: 13, color: "var(--color-text-secondary)" }}>{t("loadingEvents")}</div>;
   }
   if (error) {
     return <div style={{ padding: "1.5rem 0", fontSize: 13, color: "var(--color-text-danger)" }}>{error}</div>;
@@ -50,7 +52,7 @@ export function EventsPanel() {
   if (events.length === 0) {
     return (
       <div style={{ padding: "1.5rem 0", display: "flex", alignItems: "center", gap: 8, color: "var(--color-text-success)", fontSize: 13 }}>
-        <span>✓</span><span>Nenhum evento de warning encontrado — cluster saudável.</span>
+        <span>✓</span><span>{t("noWarnings")}</span>
       </div>
     );
   }
@@ -66,12 +68,12 @@ export function EventsPanel() {
       <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
         <thead>
           <tr>
-            <th style={{ ...thStyle, width: 110 }}>Reason</th>
-            <th style={{ ...thStyle, width: 90 }}>Objeto</th>
-            <th style={thStyle}>Mensagem</th>
-            <th style={{ ...thStyle, width: 80 }}>Namespace</th>
-            <th style={{ ...thStyle, width: 50, textAlign: "center" }}>×</th>
-            <th style={{ ...thStyle, width: 80, textAlign: "right" }}>Último</th>
+            <th style={{ ...thStyle, width: 110 }}>{t("reason")}</th>
+            <th style={{ ...thStyle, width: 90 }}>{t("object")}</th>
+            <th style={thStyle}>{t("message")}</th>
+            <th style={{ ...thStyle, width: 80 }}>{t("namespace")}</th>
+            <th style={{ ...thStyle, width: 50, textAlign: "center" }}>{t("count")}</th>
+            <th style={{ ...thStyle, width: 80, textAlign: "right" }}>{t("lastSeen")}</th>
           </tr>
         </thead>
         <tbody>

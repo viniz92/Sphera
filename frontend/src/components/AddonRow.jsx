@@ -61,6 +61,11 @@ export function AddonRow({ addon }) {
               {addon.healthy === true ? "✓" : addon.healthy === false ? "✕" : "─"}
             </span>
             <span style={{ fontWeight: 700, fontSize: 13 }}>{addon.name}</span>
+            {addon.healthy === false && (
+              <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 10, fontWeight: 600, background: "var(--color-background-danger)", color: "var(--color-text-danger)", flexShrink: 0 }}>
+                Offline
+              </span>
+            )}
           </span>
         </td>
         <td style={{ width: 80, padding: "10px 8px", verticalAlign: "middle" }}>

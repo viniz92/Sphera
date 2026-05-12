@@ -1,4 +1,5 @@
 import { AddonRow } from "./AddonRow";
+import { useLanguage } from "../context/LanguageContext";
 
 const thStyle = {
   fontSize: 11,
@@ -10,23 +11,24 @@ const thStyle = {
 };
 
 export function AddonTable({ addons, cluster }) {
+  const { t } = useLanguage();
   const needsAction = addons.filter((a) => a.compat_next !== "ok");
 
   return (
     <div>
       <div style={{ fontSize: 12, fontWeight: 500, color: "var(--color-text-secondary)", letterSpacing: ".04em", textTransform: "uppercase", marginBottom: 8 }}>
-        Addons instalados
+        {t("installedAddons")}
       </div>
 
       <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
         <thead>
           <tr>
             <th style={{ ...thStyle, width: 44, padding: "6px 0" }}></th>
-            <th style={thStyle}>Addon</th>
-            <th style={{ ...thStyle, width: 80 }}>Versão</th>
+            <th style={thStyle}>{t("addon")}</th>
+            <th style={{ ...thStyle, width: 80 }}>{t("version")}</th>
             <th style={{ ...thStyle, width: 110 }}>v{cluster.version}</th>
             <th style={{ ...thStyle, width: 110 }}>v{cluster.next_version}</th>
-            <th style={{ ...thStyle, width: 110 }}>Ação necessária</th>
+            <th style={{ ...thStyle, width: 110 }}>{t("requiredAction")}</th>
           </tr>
         </thead>
         <tbody>
@@ -41,7 +43,7 @@ export function AddonTable({ addons, cluster }) {
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: "0.75rem" }}>
             <span style={{ fontSize: 16, color: "var(--color-text-warning)" }}>⚠</span>
             <span style={{ fontSize: 13, fontWeight: 500 }}>
-              Simulação de upgrade → v{cluster.next_version}: {needsAction.length} addon{needsAction.length > 1 ? "s" : ""} precisam de atenção
+              {t("simulateUpgrade").replace(" →", "")} → v{cluster.next_version}: {needsAction.length} {t("addonsNeedAttention")}
             </span>
           </div>
           {needsAction.map((a) => (
@@ -49,7 +51,7 @@ export function AddonTable({ addons, cluster }) {
               <span style={{ fontWeight: 500 }}>{a.name}</span>
               <span style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>{a.version} → {a.compat_next === "incompat" ? "incompatível" : "requer atualização"}</span>
               <span style={{ fontSize: 12, fontWeight: 500, color: a.action_type === "danger" ? "var(--color-text-danger)" : "var(--color-text-warning)" }}>
-                Atualizar para {a.required_version_next}
+                {t("requiredAction")}: {a.required_version_next}
               </span>
             </div>
           ))}

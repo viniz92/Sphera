@@ -3,6 +3,7 @@ import { EolBar } from "./EolBar";
 import { AddonTable } from "./AddonTable";
 import { EventsPanel } from "./EventsPanel";
 import { MonitorPanel } from "./MonitorPanel";
+import { useLanguage } from "../context/LanguageContext";
 
 function MetaCard({ label, value, sub, valueColor }) {
   return (
@@ -70,6 +71,7 @@ function DonutChart({ nodeGroups }) {
 }
 
 function NodeGroupsSection({ nodeGroups }) {
+  const { t } = useLanguage();
   if (!nodeGroups || nodeGroups.length === 0) return null;
 
   const thStyle = {
@@ -81,7 +83,7 @@ function NodeGroupsSection({ nodeGroups }) {
   return (
     <div style={{ marginBottom: "1.25rem" }}>
       <div style={{ fontSize: 12, fontWeight: 500, color: "var(--color-text-secondary)", letterSpacing: ".04em", textTransform: "uppercase", marginBottom: 10 }}>
-        Node Groups
+        {t("nodeGroups")}
       </div>
       <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flexShrink: 0 }}>
@@ -105,9 +107,9 @@ function NodeGroupsSection({ nodeGroups }) {
             <thead>
               <tr>
                 <th style={thStyle}>Node group</th>
-                <th style={{ ...thStyle, width: 110 }}>Instância</th>
-                <th style={{ ...thStyle, width: 80, textAlign: "center" }}>Min/Des/Max</th>
-                <th style={{ ...thStyle, width: 68 }}>Status</th>
+                <th style={{ ...thStyle, width: 110 }}>{t("instance")}</th>
+                <th style={{ ...thStyle, width: 80, textAlign: "center" }}>{t("minDesMax")}</th>
+                <th style={{ ...thStyle, width: 68 }}>{t("status")}</th>
               </tr>
             </thead>
             <tbody>
@@ -178,18 +180,19 @@ function NodeGroupsSection({ nodeGroups }) {
 }
 
 function UpgradePath({ cluster }) {
+  const { t } = useLanguage();
   const { upgrade_path, version } = cluster;
   if (!upgrade_path || upgrade_path.length === 0) return null;
 
   return (
     <div style={{ marginTop: "1.25rem" }}>
       <div style={{ fontSize: 12, fontWeight: 500, color: "var(--color-text-secondary)", letterSpacing: ".04em", textTransform: "uppercase", marginBottom: 10 }}>
-        Simulação de upgrade
+        {t("upgradeSimulation")}
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--color-background-secondary)", border: "1.5px solid var(--color-text-success)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: "var(--color-text-success)", flexShrink: 0 }}>✓</div>
-          <div style={{ fontSize: 13, fontWeight: 500 }}>v{version} <span style={{ fontSize: 11, color: "var(--color-text-secondary)", fontWeight: 400 }}>— versão atual</span></div>
+          <div style={{ fontSize: 13, fontWeight: 500 }}>v{version} <span style={{ fontSize: 11, color: "var(--color-text-secondary)", fontWeight: 400 }}>— {t("currentVersionBadge")}</span></div>
         </div>
         {upgrade_path.map((step, i) => {
           const hasActions = step.addons_to_update.length > 0;
@@ -202,7 +205,7 @@ function UpgradePath({ cluster }) {
                 </div>
               </div>
               <div style={{ paddingTop: 12, flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 6 }}>Upgrade para v{step.version}</div>
+                <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 6 }}>{t("upgradeTo")}{step.version}</div>
                 <div style={{ background: "var(--color-background-secondary)", borderRadius: "var(--border-radius-md)", padding: "8px 10px", display: "flex", flexDirection: "column", gap: 4 }}>
                   {hasActions ? (
                     <>
@@ -232,14 +235,15 @@ function UpgradePath({ cluster }) {
   );
 }
 
-const TABS = [
-  { id: "addons", label: "Addons" },
-  { id: "nos", label: "Nós" },
-  { id: "eventos", label: "Eventos" },
-  { id: "monitor", label: "Monitor" },
+const TAB_KEYS = [
+  { id: "addons", key: "tabAddons" },
+  { id: "nos", key: "tabNodes" },
+  { id: "eventos", key: "tabEvents" },
+  { id: "monitor", key: "tabMonitor" },
 ];
 
 export function ClusterCard({ cluster, addons, addonsLoading }) {
+  const { t } = useLanguage();
   const [showUpgradePath, setShowUpgradePath] = useState(false);
   const [activeTab, setActiveTab] = useState("addons");
   const days = cluster.eol_days_remaining;
@@ -261,27 +265,26 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
           {hasUpgradePath && (
             <button onClick={() => setShowUpgradePath(v => !v)}
               style={{ fontSize: 11, padding: "3px 10px", borderRadius: 20, fontWeight: 500, background: "var(--color-background-info)", color: "var(--color-text-info)", border: "none", cursor: "pointer" }}>
-              {showUpgradePath ? "Ocultar upgrade" : "Simular upgrade →"}
+              {showUpgradePath ? t("hideUpgrade") : t("simulateUpgrade")}
             </button>
           )}
         </div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10, marginBottom: "1.25rem" }}>
-        <MetaCard label="Versão atual" value={cluster.version} sub="Kubernetes" />
-        <MetaCard label="Próxima versão" value={cluster.next_version} sub="Disponível" />
-        <MetaCard label="Fim do suporte" value={cluster.eol_date ?? "—"}
-          sub={`Suporte padrão (free) · ${days < 60 ? `${days} dias` : `${days} dias · ~${Math.round(days / 30)} meses`}`}
+        <MetaCard label={t("currentVersion")} value={cluster.version} sub="Kubernetes" />
+        <MetaCard label={t("nextVersion")} value={cluster.next_version} sub="Disponível" />
+        <MetaCard label={t("endOfSupport")} value={cluster.eol_date ?? "—"}
+          sub={`${t("supportLabel")} · ${days < 60 ? `${days} dias` : `${days} dias · ~${Math.round(days / 30)} meses`}`}
           valueColor={eolBadgeColor} />
-        <MetaCard label="Região" value={cluster.region} sub="AWS" />
-        <MetaCard label="Nós" value={cluster.node_count} sub={`${cluster.node_groups?.length ?? 0} node groups`} />
+        <MetaCard label={t("region")} value={cluster.region} sub="AWS" />
+        <MetaCard label={t("nodes")} value={cluster.node_count} sub={`${cluster.node_groups?.length ?? 0} node groups`} />
       </div>
 
       <EolBar cluster={cluster} />
 
-      {/* Tabs: Nós / Eventos / Monitor */}
       <div style={{ display: "flex", borderBottom: "1px solid var(--color-border-tertiary)", marginBottom: "1rem" }}>
-        {TABS.map(tab => (
+        {TAB_KEYS.map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
             padding: "7px 18px", fontSize: 12, fontWeight: activeTab === tab.id ? 600 : 400,
             color: activeTab === tab.id ? "var(--color-text-info)" : "var(--color-text-secondary)",
@@ -289,13 +292,13 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
             borderBottom: activeTab === tab.id ? "2px solid var(--color-text-info)" : "2px solid transparent",
             marginBottom: -1,
           }}>
-            {tab.label}
+            {t(tab.key)}
           </button>
         ))}
       </div>
 
       {activeTab === "addons" && (addonsLoading
-        ? <div style={{ fontSize: 13, color: "var(--color-text-secondary)", padding: "1rem 0" }}>Carregando addons...</div>
+        ? <div style={{ fontSize: 13, color: "var(--color-text-secondary)", padding: "1rem 0" }}>{t("loadingAddons")}</div>
         : <AddonTable addons={addons} cluster={cluster} />
       )}
       {activeTab === "nos" && <NodeGroupsSection nodeGroups={cluster.node_groups} />}
