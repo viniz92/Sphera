@@ -37,7 +37,7 @@ export function ClusterCard({ cluster, addons, addonsLoading, onReset }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10, marginBottom: "1.25rem" }}>
         <MetaCard label="Versão atual" value={cluster.version} sub="Kubernetes" />
         <MetaCard label="Próxima versão" value={cluster.next_version} sub="Disponível" />
-        <MetaCard label="Fim do suporte" value={cluster.eol_date ?? "—"} sub={days < 60 ? `${days} dias` : `${days} dias · ~${Math.round(days / 30)} meses`} valueColor={eolBadgeColor} />
+        <MetaCard label="Fim do suporte" value={cluster.eol_date ?? "—"} sub={`Suporte padrão (free) · ${days < 60 ? `${days} dias` : `${days} dias · ~${Math.round(days / 30)} meses`}`} valueColor={eolBadgeColor} />
         <MetaCard label="Região" value={cluster.region} sub="AWS" />
         <MetaCard label="Nós" value={cluster.node_count} sub={`${cluster.node_groups?.length ?? 0} node groups`} />
       </div>
