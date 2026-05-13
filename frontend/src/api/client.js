@@ -58,3 +58,8 @@ export async function fetchCosts() {
   const { data } = await api.get("/costs/");
   return data;
 }
+
+export async function fetchNodeCharts() {
+  const { data } = await api.get("/prometheus/nodes/charts");
+  return data;
+}

@@ -87,6 +87,9 @@ affinity: {}
 clusterName: ""
 awsRegion: "us-east-1"
 
+# URL do Prometheus para gráficos de métricas históricas
+prometheusUrl: "http://prometheus-server.monitoring.svc.cluster.local"
+
 # Credenciais de acesso ao dashboard
 auth:
   username: "admin"

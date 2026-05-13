@@ -57,6 +57,8 @@ spec:
               value: {{ .Values.auth.username | quote }}
             - name: PALANTIR_PASSWORD
               value: {{ .Values.auth.password | quote }}
+            - name: PROMETHEUS_URL
+              value: {{ .Values.prometheusUrl | quote }}
             {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

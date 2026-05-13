@@ -4,6 +4,7 @@ import { AddonTable } from "./AddonTable";
 import { EventsPanel } from "./EventsPanel";
 import { MonitorPanel } from "./MonitorPanel";
 import { CostsPanel } from "./CostsPanel";
+import { NodeCharts } from "./NodeCharts";
 import { useLanguage } from "../context/LanguageContext";
 import { fetchNodeMetrics } from "../api/client";
 
@@ -331,7 +332,12 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
         ? <div style={{ fontSize: 13, color: "var(--color-text-secondary)", padding: "1rem 0" }}>{t("loadingAddons")}</div>
         : <AddonTable addons={addons} cluster={cluster} />
       )}
-      {activeTab === "nos" && <NodeGroupsSection nodeGroups={cluster.node_groups} />}
+      {activeTab === "nos" && (
+        <>
+          <NodeGroupsSection nodeGroups={cluster.node_groups} />
+          <NodeCharts />
+        </>
+      )}
       {activeTab === "eventos" && <EventsPanel key={lang} />}
       {activeTab === "monitor" && <MonitorPanel key={lang} />}
       {activeTab === "costs"   && <CostsPanel key={lang} />}

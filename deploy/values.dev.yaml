@@ -10,6 +10,7 @@ image:
 
 clusterName: "seru-dev"
 awsRegion: "us-east-1"
+prometheusUrl: "http://prometheus-server.monitoring.svc.cluster.local"
 
 ingress:
   enabled: true
