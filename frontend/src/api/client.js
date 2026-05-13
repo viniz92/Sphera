@@ -48,3 +48,8 @@ export async function fetchNodeMetrics() {
   const { data } = await api.get("/metrics/nodes");
   return data;
 }
+
+export async function fetchPodMetrics() {
+  const { data } = await api.get("/metrics/pods");
+  return data;
+}

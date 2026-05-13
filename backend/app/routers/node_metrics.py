@@ -1,9 +1,16 @@
+from datetime import datetime, timezone
 from fastapi import APIRouter
 from kubernetes import client as k8s_client
 from app.services.k8s import get_core_v1, get_k8s_client
-from app.models.metrics import NodeMetrics
+from app.models.metrics import NodeMetrics, PodInfo
 
 router = APIRouter()
+
+# Statuses that indicate a pod is healthy (don't flag as problematic)
+_OK_STATUSES = {"Running", "Succeeded", "Completed"}
+
+# Container waiting reasons that indicate a real problem
+_BAD_REASONS = {"CrashLoopBackOff", "OOMKilled", "Error", "ImagePullBackOff", "ErrImagePull", "CreateContainerError"}
 
 
 def _parse_cpu(cpu: str) -> float:
@@ -53,7 +60,6 @@ def node_metrics():
             cpu_use = _parse_cpu(usage.get("cpu", "0"))
             mem_use = _parse_memory_mib(usage.get("memory", "0Ki"))
             cpu_cap, mem_cap = capacity_map.get(name, (0, 0))
-
             result.append(NodeMetrics(
                 name=name,
                 cpu_millicores=int(cpu_use),
@@ -63,6 +69,75 @@ def node_metrics():
                 cpu_percent=round(cpu_use / cpu_cap * 100, 1) if cpu_cap > 0 else None,
                 memory_percent=round(mem_use / mem_cap * 100, 1) if mem_cap > 0 else None,
             ))
+    except Exception:
+        pass
+    return result
+
+
+@router.get("/pods", response_model=list[PodInfo])
+def pod_metrics():
+    result = []
+    try:
+        core = get_core_v1()
+        now = datetime.now(timezone.utc)
+
+        # Pod metrics from metrics-server
+        metrics_map: dict[tuple[str, str], tuple[int, int]] = {}
+        try:
+            custom = k8s_client.CustomObjectsApi(get_k8s_client())
+            ml = custom.list_cluster_custom_object("metrics.k8s.io", "v1beta1", "pods")
+            for item in ml.get("items", []):
+                ns = item["metadata"]["namespace"]
+                name = item["metadata"]["name"]
+                containers = item.get("containers", [])
+                cpu = sum(_parse_cpu(c["usage"]["cpu"]) for c in containers)
+                mem = sum(_parse_memory_mib(c["usage"]["memory"]) for c in containers)
+                metrics_map[(ns, name)] = (int(cpu), int(mem))
+        except Exception:
+            pass
+
+        for pod in core.list_pod_for_all_namespaces().items:
+            ns = pod.metadata.namespace
+            name = pod.metadata.name
+            phase = pod.status.phase or "Unknown"
+
+            status = phase
+            restarts = 0
+            containers_ready = 0
+            containers_total = 0
+
+            for cs in (pod.status.container_statuses or []):
+                containers_total += 1
+                if cs.ready:
+                    containers_ready += 1
+                restarts += cs.restart_count or 0
+                # Detect bad waiting state
+                if cs.state and cs.state.waiting and cs.state.waiting.reason in _BAD_REASONS:
+                    status = cs.state.waiting.reason
+                # Detect OOMKilled from last state
+                elif cs.last_state and cs.last_state.terminated and cs.state and cs.state.waiting:
+                    if cs.last_state.terminated.reason == "OOMKilled":
+                        status = "OOMKilled"
+
+            if status == "Running" and containers_ready < containers_total:
+                status = "NotReady"
+
+            age_seconds = 0
+            if pod.metadata.creation_timestamp:
+                age_seconds = int((now - pod.metadata.creation_timestamp).total_seconds())
+
+            cpu_m, mem_mib = metrics_map.get((ns, name), (None, None))
+
+            result.append(PodInfo(
+                name=name, namespace=ns, status=status,
+                restarts=restarts, age_seconds=age_seconds,
+                node_name=pod.spec.node_name,
+                cpu_millicores=cpu_m, memory_mib=mem_mib,
+                containers_ready=containers_ready, containers_total=containers_total,
+            ))
+
+        # Problematic pods first, then by namespace/name
+        result.sort(key=lambda p: (p.status in _OK_STATUSES, p.namespace, p.name))
     except Exception:
         pass
     return result

@@ -74,6 +74,18 @@ export const translations = {
     memoryCol: "Memória",
     metricsUnavailable: "Metrics Server não disponível neste cluster. Instale o metrics-server para habilitar o monitoramento.",
     errorMetrics: "Erro ao buscar métricas",
+    // Pods (Monitor tab)
+    loadingPods: "Carregando pods...",
+    errorPods: "Erro ao carregar pods",
+    noPods: "Nenhum pod encontrado.",
+    podCol: "Pod",
+    containersCol: "Containers",
+    restartsCol: "Restarts",
+    ageCol: "Idade",
+    nodeCol2: "Nó",
+    allNamespaces: "Todos os namespaces",
+    hideSystem: "Ocultar sistema",
+    showSystem: "Mostrar sistema",
 
     // LoginPage
     username: "Usuário",
@@ -173,6 +185,18 @@ export const translations = {
 
     // Loading states
     loadingAddons: "Loading addons...",
+    // Pods (Monitor tab)
+    loadingPods: "Loading pods...",
+    errorPods: "Error loading pods",
+    noPods: "No pods found.",
+    podCol: "Pod",
+    containersCol: "Containers",
+    restartsCol: "Restarts",
+    ageCol: "Age",
+    nodeCol2: "Node",
+    allNamespaces: "All namespaces",
+    hideSystem: "Hide system",
+    showSystem: "Show system",
   },
 
   es: {
@@ -242,5 +266,16 @@ export const translations = {
     loginError: "Usuario o contraseña incorrectos",
     connectionFailed: "Error al conectar con el servidor",
     loadingAddons: "Cargando addons...",
+    loadingPods: "Cargando pods...",
+    errorPods: "Error al cargar pods",
+    noPods: "No se encontraron pods.",
+    podCol: "Pod",
+    containersCol: "Contenedores",
+    restartsCol: "Reinicios",
+    ageCol: "Edad",
+    nodeCol2: "Nodo",
+    allNamespaces: "Todos los namespaces",
+    hideSystem: "Ocultar sistema",
+    showSystem: "Mostrar sistema",
   },
 };

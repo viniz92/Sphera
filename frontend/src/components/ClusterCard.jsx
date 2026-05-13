@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EolBar } from "./EolBar";
 import { AddonTable } from "./AddonTable";
 import { EventsPanel } from "./EventsPanel";
 import { MonitorPanel } from "./MonitorPanel";
 import { useLanguage } from "../context/LanguageContext";
+import { fetchNodeMetrics } from "../api/client";
 
 function MetaCard({ label, value, sub, valueColor }) {
   return (
@@ -70,8 +71,33 @@ function DonutChart({ nodeGroups }) {
   );
 }
 
+function MiniBar({ percent, color }) {
+  const pct = Math.min(100, percent ?? 0);
+  const c = pct > 85 ? "var(--color-text-danger)" : pct > 65 ? "var(--color-text-warning)" : color;
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+      <div style={{ width: 52, background: "var(--color-background-secondary)", borderRadius: 3, height: 5, overflow: "hidden" }}>
+        <div style={{ height: "100%", borderRadius: 3, background: c, width: `${pct}%` }} />
+      </div>
+      <span style={{ fontSize: 10, color: c, minWidth: 28 }}>{percent != null ? `${percent}%` : "—"}</span>
+    </div>
+  );
+}
+
 function NodeGroupsSection({ nodeGroups }) {
   const { t } = useLanguage();
+  const [nodeMetrics, setNodeMetrics] = useState({});
+
+  useEffect(() => {
+    fetchNodeMetrics()
+      .then(data => {
+        const map = {};
+        data.forEach(m => { map[m.name] = m; });
+        setNodeMetrics(map);
+      })
+      .catch(() => {});
+  }, []);
+
   if (!nodeGroups || nodeGroups.length === 0) return null;
 
   const thStyle = {
@@ -150,24 +176,35 @@ function NodeGroupsSection({ nodeGroups }) {
                         {ng.status ?? "—"}
                       </td>
                     </tr>
-                    {instances.map(inst => (
-                      <tr key={inst.instance_id} style={{ borderBottom: "0.5px solid var(--color-border-tertiary)", opacity: dimmed ? 0.35 : 1 }}>
-                        <td colSpan={4} style={{ padding: "2px 6px 5px 20px" }}>
-                          <div style={{ display: "flex", flexWrap: "wrap", gap: "3px 10px", alignItems: "center" }}>
-                            <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", fontFamily: "monospace" }}>{inst.instance_id}</span>
-                            {inst.private_ip && (
-                              <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>{inst.private_ip}</span>
-                            )}
-                            {inst.az && (
-                              <span style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>{inst.az}</span>
-                            )}
-                            {inst.node_name && inst.node_name !== inst.instance_id && (
-                              <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", fontFamily: "monospace" }}>{inst.node_name}</span>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                    {instances.map(inst => {
+                      const m = nodeMetrics[inst.node_name];
+                      return (
+                        <tr key={inst.instance_id} style={{ borderBottom: "0.5px solid var(--color-border-tertiary)", opacity: dimmed ? 0.35 : 1 }}>
+                          <td colSpan={4} style={{ padding: "2px 6px 6px 20px" }}>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: "3px 12px", alignItems: "center" }}>
+                              <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", fontFamily: "monospace" }}>{inst.instance_id}</span>
+                              {inst.private_ip && <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>{inst.private_ip}</span>}
+                              {inst.az && <span style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>{inst.az}</span>}
+                              {inst.node_name && inst.node_name !== inst.instance_id && (
+                                <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", fontFamily: "monospace" }}>{inst.node_name}</span>
+                              )}
+                              {m && (
+                                <span style={{ display: "inline-flex", alignItems: "center", gap: 8, marginLeft: 4 }}>
+                                  <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
+                                    <span style={{ fontSize: 10, color: "var(--color-text-tertiary)" }}>CPU</span>
+                                    <MiniBar percent={m.cpu_percent} color="var(--color-text-info)" />
+                                  </span>
+                                  <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
+                                    <span style={{ fontSize: 10, color: "var(--color-text-tertiary)" }}>MEM</span>
+                                    <MiniBar percent={m.memory_percent} color="var(--color-text-success)" />
+                                  </span>
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </>
                 );
               })}
