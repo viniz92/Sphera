@@ -14,6 +14,7 @@ export const translations = {
     tabAddons: "Addons",
     tabNodes: "Nós",
     tabEvents: "Eventos",
+    tabPods: "Pods",
     tabMonitor: "Monitor",
     tabCosts: "Custos",
 
@@ -115,6 +116,7 @@ export const translations = {
     tabAddons: "Addons",
     tabNodes: "Nodes",
     tabEvents: "Events",
+    tabPods: "Pods",
     tabMonitor: "Monitor",
     tabCosts: "Costs",
 
@@ -213,6 +215,7 @@ export const translations = {
     tabAddons: "Addons",
     tabNodes: "Nodos",
     tabEvents: "Eventos",
+    tabPods: "Pods",
     tabMonitor: "Monitor",
     tabCosts: "Costos",
     currentVersion: "Versión actual",

@@ -5,6 +5,7 @@ import { EventsPanel } from "./EventsPanel";
 import { MonitorPanel } from "./MonitorPanel";
 import { CostsPanel } from "./CostsPanel";
 import { NodeCharts } from "./NodeCharts";
+import { MonitorDashboard } from "./MonitorDashboard";
 import { useLanguage } from "../context/LanguageContext";
 import { fetchNodeMetrics } from "../api/client";
 
@@ -275,8 +276,9 @@ function UpgradePath({ cluster }) {
 const TAB_KEYS = [
   { id: "addons",  key: "tabAddons" },
   { id: "nos",     key: "tabNodes" },
-  { id: "eventos", key: "tabEvents" },
   { id: "monitor", key: "tabMonitor" },
+  { id: "pods",    key: "tabPods" },
+  { id: "eventos", key: "tabEvents" },
   { id: "costs",   key: "tabCosts" },
 ];
 
@@ -338,8 +340,9 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
           <NodeCharts />
         </>
       )}
+      {activeTab === "monitor" && <MonitorDashboard key={lang} />}
+      {activeTab === "pods"    && <MonitorPanel key={lang} />}
       {activeTab === "eventos" && <EventsPanel key={lang} />}
-      {activeTab === "monitor" && <MonitorPanel key={lang} />}
       {activeTab === "costs"   && <CostsPanel key={lang} />}
     </div>
   );
