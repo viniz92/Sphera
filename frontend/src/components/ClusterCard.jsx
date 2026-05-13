@@ -4,6 +4,7 @@ import { AddonTable } from "./AddonTable";
 import { EventsPanel } from "./EventsPanel";
 import { MonitorPanel } from "./MonitorPanel";
 import { CostsPanel } from "./CostsPanel";
+import { EksVersionsPanel } from "./EksVersionsPanel";
 import { NodeCharts } from "./NodeCharts";
 import { MonitorDashboard } from "./MonitorDashboard";
 import { useLanguage } from "../context/LanguageContext";
@@ -274,12 +275,13 @@ function UpgradePath({ cluster }) {
 }
 
 const TAB_KEYS = [
-  { id: "addons",  key: "tabAddons" },
-  { id: "nos",     key: "tabNodes" },
-  { id: "pods",    key: "tabPods" },
-  { id: "monitor", key: "tabMonitor" },
-  { id: "eventos", key: "tabEvents" },
-  { id: "costs",   key: "tabCosts" },
+  { id: "addons",   key: "tabAddons" },
+  { id: "nos",      key: "tabNodes" },
+  { id: "pods",     key: "tabPods" },
+  { id: "monitor",  key: "tabMonitor" },
+  { id: "eventos",  key: "tabEvents" },
+  { id: "costs",    key: "tabCosts" },
+  { id: "versions", key: "tabVersions" },
 ];
 
 export function ClusterCard({ cluster, addons, addonsLoading }) {
@@ -300,6 +302,14 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 11, padding: "3px 10px", borderRadius: 20, fontWeight: 500, background: eolBadgeBg, color: eolBadgeColor }}>{eolLabel}</span>
+          <button onClick={() => setActiveTab("versions")} style={{
+            fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20,
+            background: activeTab === "versions" ? "rgba(74,127,212,0.18)" : "var(--color-background-secondary)",
+            color: "var(--color-text-info)", border: "0.5px solid var(--color-border-secondary)",
+            cursor: "pointer",
+          }}>
+            {t("eksVersionsBtn")} →
+          </button>
         </div>
       </div>
 
@@ -343,7 +353,8 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
       {activeTab === "monitor" && <MonitorDashboard key={lang} />}
       {activeTab === "pods"    && <MonitorPanel key={lang} />}
       {activeTab === "eventos" && <EventsPanel key={lang} />}
-      {activeTab === "costs"   && <CostsPanel key={lang} />}
+      {activeTab === "costs"    && <CostsPanel key={lang} />}
+      {activeTab === "versions" && <EksVersionsPanel currentVersion={cluster.version} key={lang} />}
     </div>
   );
 }

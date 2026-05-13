@@ -17,6 +17,7 @@ export const translations = {
     tabPods: "Pods",
     tabMonitor: "Monitor",
     tabCosts: "Custos",
+    tabVersions: "Versões EKS",
 
     // ClusterCard meta
     currentVersion: "Versão atual",
@@ -99,6 +100,18 @@ export const translations = {
 
     // Loading states
     loadingAddons: "Carregando addons...",
+
+    // PodDrawer
+    podLoading: "Carregando...",
+    podLoadError: "Erro ao carregar detalhes do pod",
+    podOverview: "Visão geral",
+    podAge: "Idade",
+    podCreatedAt: "Criado em",
+    podPorts: "Portas",
+    podConditions: "Condições",
+    podRecentEvents: "Eventos recentes",
+    podDetailsBtn: "Detalhes",
+    eksVersionsBtn: "Versões",
   },
 
   en: {
@@ -119,6 +132,7 @@ export const translations = {
     tabPods: "Pods",
     tabMonitor: "Monitor",
     tabCosts: "Costs",
+    tabVersions: "EKS Versions",
 
     // ClusterCard meta
     currentVersion: "Current version",
@@ -189,6 +203,18 @@ export const translations = {
 
     // Loading states
     loadingAddons: "Loading addons...",
+
+    // PodDrawer
+    podLoading: "Loading...",
+    podLoadError: "Error loading pod details",
+    podOverview: "Overview",
+    podAge: "Age",
+    podCreatedAt: "Created at",
+    podPorts: "Ports",
+    podConditions: "Conditions",
+    podRecentEvents: "Recent events",
+    podDetailsBtn: "Details",
+    eksVersionsBtn: "Versions",
     // Pods (Monitor tab)
     loadingPods: "Loading pods...",
     errorPods: "Error loading pods",
@@ -218,6 +244,7 @@ export const translations = {
     tabPods: "Pods",
     tabMonitor: "Monitor",
     tabCosts: "Costos",
+    tabVersions: "Versiones EKS",
     currentVersion: "Versión actual",
     nextVersion: "Próxima versión",
     endOfSupport: "Fin del soporte",
@@ -272,6 +299,18 @@ export const translations = {
     loginError: "Usuario o contraseña incorrectos",
     connectionFailed: "Error al conectar con el servidor",
     loadingAddons: "Cargando addons...",
+
+    // PodDrawer
+    podLoading: "Cargando...",
+    podLoadError: "Error al cargar detalles del pod",
+    podOverview: "Resumen",
+    podAge: "Edad",
+    podCreatedAt: "Creado el",
+    podPorts: "Puertos",
+    podConditions: "Condiciones",
+    podRecentEvents: "Eventos recientes",
+    podDetailsBtn: "Detalles",
+    eksVersionsBtn: "Versiones",
     loadingPods: "Cargando pods...",
     errorPods: "Error al cargar pods",
     noPods: "No se encontraron pods.",

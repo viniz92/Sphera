@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { fetchPodDetail } from "../api/client";
+import { useLanguage } from "../context/LanguageContext";
 
 const STATUS_COLOR = {
   Running: "var(--color-text-success)", Succeeded: "var(--color-text-success)",
@@ -38,6 +39,7 @@ function KV({ label, value, mono, color }) {
 }
 
 export function PodDrawer({ pod: podRef, onClose }) {
+  const { t, lang } = useLanguage();
   const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -48,7 +50,7 @@ export function PodDrawer({ pod: podRef, onClose }) {
     setDetail(null);
     fetchPodDetail(podRef.namespace, podRef.name)
       .then(setDetail)
-      .catch(() => setError("Erro ao carregar detalhes do pod"))
+      .catch(() => setError(t("podLoadError")))
       .finally(() => setLoading(false));
   }, [podRef?.namespace, podRef?.name]);
 
@@ -88,19 +90,19 @@ export function PodDrawer({ pod: podRef, onClose }) {
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-text-secondary)", fontSize: 20, lineHeight: 1, padding: "2px 6px" }}>✕</button>
         </div>
 
-        {loading && <div style={{ fontSize: 13, color: "var(--color-text-secondary)", padding: "2rem 0", textAlign: "center" }}>Carregando...</div>}
+        {loading && <div style={{ fontSize: 13, color: "var(--color-text-secondary)", padding: "2rem 0", textAlign: "center" }}>{t("podLoading")}</div>}
         {error   && <div style={{ fontSize: 13, color: "var(--color-text-danger)" }}>{error}</div>}
 
         {detail && (
           <>
             {/* Overview */}
-            <Section title="Visão geral">
+            <Section title={t("podOverview")}>
               <div style={{ background: "var(--color-background-secondary)", borderRadius: "var(--border-radius-md)", padding: "12px 14px" }}>
                 <div style={{ display: "flex", gap: 8, marginBottom: 10, alignItems: "center" }}>
                   <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 10, fontWeight: 600, background: statusColor + "22", color: statusColor }}>{detail.status}</span>
                   {detail.cpu_millicores != null && <span style={{ fontSize: 11, color: "var(--color-text-info)" }}>CPU {detail.cpu_millicores}m</span>}
                   {detail.memory_mib    != null && <span style={{ fontSize: 11, color: "var(--color-text-success)" }}>Mem {fmtMem(detail.memory_mib)}</span>}
-                  <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", marginLeft: "auto" }}>Idade: {fmtAge(detail.created_at)}</span>
+                  <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", marginLeft: "auto" }}>{t("podAge")}: {fmtAge(detail.created_at)}</span>
                 </div>
                 {detail.owner_name && (
                   <KV label={detail.owner_kind ?? "Owner"} value={detail.owner_name} mono/>
@@ -108,7 +110,7 @@ export function PodDrawer({ pod: podRef, onClose }) {
                 <KV label="Node" value={detail.node_name} mono/>
                 <KV label="Pod IP" value={detail.pod_ip} mono/>
                 <KV label="Host IP" value={detail.host_ip} mono/>
-                <KV label="Criado em" value={detail.created_at ? new Date(detail.created_at).toLocaleString("pt-BR") : "—"}/>
+                <KV label={t("podCreatedAt")} value={detail.created_at ? new Date(detail.created_at).toLocaleString(lang === "pt" ? "pt-BR" : lang === "es" ? "es-ES" : "en-US") : "—"}/>
               </div>
             </Section>
 
@@ -126,7 +128,7 @@ export function PodDrawer({ pod: podRef, onClose }) {
                     </div>
                   </div>
                   <div style={{ fontSize: 11, color: "var(--color-text-tertiary)", fontFamily: "monospace", wordBreak: "break-all", marginBottom: c.ports.length > 0 ? 4 : 0 }}>{c.image}</div>
-                  {c.ports.length > 0 && <div style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>Portas: {c.ports.join(", ")}</div>}
+                  {c.ports.length > 0 && <div style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>{t("podPorts")}: {c.ports.join(", ")}</div>}
                   {(c.cpu_millicores != null || c.memory_mib != null) && (
                     <div style={{ display: "flex", gap: 12, marginTop: 4 }}>
                       {c.cpu_millicores != null && <span style={{ fontSize: 11, color: "var(--color-text-info)" }}>CPU {c.cpu_millicores}m</span>}
@@ -139,7 +141,7 @@ export function PodDrawer({ pod: podRef, onClose }) {
 
             {/* Conditions */}
             {detail.conditions.length > 0 && (
-              <Section title="Condições">
+              <Section title={t("podConditions")}>
                 <div style={{ background: "var(--color-background-secondary)", borderRadius: "var(--border-radius-md)", padding: "10px 14px" }}>
                   {detail.conditions.map((c, i) => (
                     <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: i < detail.conditions.length - 1 ? 6 : 0 }}>
@@ -167,7 +169,7 @@ export function PodDrawer({ pod: podRef, onClose }) {
 
             {/* Events */}
             {detail.events.length > 0 && (
-              <Section title="Eventos recentes">
+              <Section title={t("podRecentEvents")}>
                 {detail.events.map((e, i) => (
                   <div key={i} style={{ padding: "8px 12px", marginBottom: 4, background: "var(--color-background-secondary)", borderRadius: "var(--border-radius-md)", borderLeft: `2px solid ${e.type === "Warning" ? "var(--color-text-warning)" : "var(--color-border-secondary)"}` }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
