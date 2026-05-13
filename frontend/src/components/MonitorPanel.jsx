@@ -174,15 +174,16 @@ export function MonitorPanel() {
           <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
             <thead>
               <tr>
-                {thBtn("namespace", "Namespace", "left", 140)}
+                {thBtn("namespace", "Namespace", "left", 130)}
                 {thBtn("name",      t("podCol"),          "left")}
                 {thBtn("status",    t("status"),          "left",  90)}
-                {thBtn("containers",t("containersCol"),   "center",72)}
-                {thBtn("restarts",  t("restartsCol"),     "center",64)}
-                {thBtn("age",       t("ageCol"),          "right", 52)}
-                {thBtn("cpu",       t("cpuCol"),          "right", 70)}
-                {thBtn("memory",    t("memoryCol"),       "right", 70)}
-                {thBtn("node",      t("nodeCol2"),        "left",  110)}
+                {thBtn("containers",t("containersCol"),   "center",68)}
+                {thBtn("restarts",  t("restartsCol"),     "center",60)}
+                {thBtn("age",       t("ageCol"),          "right", 48)}
+                {thBtn("cpu",       t("cpuCol"),          "right", 66)}
+                {thBtn("memory",    t("memoryCol"),       "right", 66)}
+                {thBtn("node",      t("nodeCol2"),        "left",  100)}
+                <th style={{ fontSize: 11, color: "var(--color-text-tertiary)", fontWeight: 400, padding: "5px 8px", borderBottom: "0.5px solid var(--color-border-tertiary)", width: 66 }}></th>
               </tr>
             </thead>
             <tbody>
@@ -190,22 +191,23 @@ export function MonitorPanel() {
                 const ss = statusStyle(p.status);
                 const isProblematic = !OK_STATUSES.has(p.status);
                 return (
-                  <tr key={i} onClick={() => setSelectedPod(p)}
-                    style={{ borderBottom: "0.5px solid var(--color-border-tertiary)", background: isProblematic ? "rgba(248,113,113,0.03)" : "none", cursor: "pointer" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.03)"}
-                    onMouseLeave={e => e.currentTarget.style.background = isProblematic ? "rgba(248,113,113,0.03)" : "none"}
-                  >
+                  <tr key={i} style={{ borderBottom: "0.5px solid var(--color-border-tertiary)", background: isProblematic ? "rgba(248,113,113,0.03)" : "none" }}>
                     <td style={{ padding: "5px 6px", fontSize: 11, color: "var(--color-text-tertiary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.namespace}</td>
                     <td style={{ padding: "5px 6px", fontSize: 12, fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--color-text-primary)" }} title={p.name}>{p.name}</td>
-                    <td style={{ padding: "5px 8px" }}>
+                    <td style={{ padding: "5px 6px" }}>
                       <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 10, fontWeight: 600, background: ss.bg, color: ss.color, whiteSpace: "nowrap" }}>{p.status}</span>
                     </td>
-                    <td style={{ padding: "5px 8px", fontSize: 11, color: "var(--color-text-secondary)", textAlign: "center" }}>{p.containers_ready}/{p.containers_total}</td>
-                    <td style={{ padding: "5px 8px", fontSize: 11, textAlign: "center", fontWeight: p.restarts > 0 ? 600 : 400, color: p.restarts > 5 ? "var(--color-text-danger)" : p.restarts > 0 ? "var(--color-text-warning)" : "var(--color-text-tertiary)" }}>{p.restarts}</td>
-                    <td style={{ padding: "5px 8px", fontSize: 11, color: "var(--color-text-tertiary)", textAlign: "right" }}>{fmtAge(p.age_seconds)}</td>
-                    <td style={{ padding: "5px 8px", fontSize: 11, color: "var(--color-text-info)", textAlign: "right" }}>{p.cpu_millicores != null ? `${p.cpu_millicores}m` : "—"}</td>
-                    <td style={{ padding: "5px 8px", fontSize: 11, color: "var(--color-text-success)", textAlign: "right" }}>{fmtMem(p.memory_mib)}</td>
-                    <td style={{ padding: "5px 8px", fontSize: 11, color: "var(--color-text-tertiary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={p.node_name ?? ""}>{shortNode(p.node_name)}</td>
+                    <td style={{ padding: "5px 6px", fontSize: 11, color: "var(--color-text-secondary)", textAlign: "center" }}>{p.containers_ready}/{p.containers_total}</td>
+                    <td style={{ padding: "5px 6px", fontSize: 11, textAlign: "center", fontWeight: p.restarts > 0 ? 600 : 400, color: p.restarts > 5 ? "var(--color-text-danger)" : p.restarts > 0 ? "var(--color-text-warning)" : "var(--color-text-tertiary)" }}>{p.restarts}</td>
+                    <td style={{ padding: "5px 6px", fontSize: 11, color: "var(--color-text-tertiary)", textAlign: "right" }}>{fmtAge(p.age_seconds)}</td>
+                    <td style={{ padding: "5px 6px", fontSize: 11, color: "var(--color-text-info)", textAlign: "right" }}>{p.cpu_millicores != null ? `${p.cpu_millicores}m` : "—"}</td>
+                    <td style={{ padding: "5px 6px", fontSize: 11, color: "var(--color-text-success)", textAlign: "right" }}>{fmtMem(p.memory_mib)}</td>
+                    <td style={{ padding: "5px 6px", fontSize: 11, color: "var(--color-text-tertiary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={p.node_name ?? ""}>{shortNode(p.node_name)}</td>
+                    <td style={{ padding: "5px 6px", textAlign: "center" }}>
+                      <button onClick={() => setSelectedPod(p)} style={{ fontSize: 10, padding: "2px 8px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "none", color: "var(--color-text-info)", cursor: "pointer", fontWeight: 500, whiteSpace: "nowrap" }}>
+                        Details →
+                      </button>
+                    </td>
                   </tr>
                 );
               })}
