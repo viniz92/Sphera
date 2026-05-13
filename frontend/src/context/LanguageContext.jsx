@@ -4,10 +4,10 @@ import { translations } from "../i18n/translations";
 const LanguageContext = createContext();
 
 export function LanguageProvider({ children }) {
-  const [lang, setLang] = useState(() => localStorage.getItem("palantir_lang") || "pt");
+  const [lang, setLang] = useState(() => localStorage.getItem("sphera_lang") || "pt");
 
   function setLanguage(code) {
-    localStorage.setItem("palantir_lang", code);
+    localStorage.setItem("sphera_lang", code);
     setLang(code);
   }
 

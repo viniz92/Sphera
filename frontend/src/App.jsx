@@ -51,7 +51,7 @@ function useTheme() {
 }
 
 export default function App() {
-  const [token, setToken] = useState(() => localStorage.getItem("palantir_token") || "");
+  const [token, setToken] = useState(() => localStorage.getItem("sphera_token") || "");
   const { cluster, loading, refreshing, error, refresh, lastUpdated } = useCluster(!!token);
   const { addons, loading: addonsLoading, reload: reloadAddons } = useAddons(!!cluster);
   const [theme, toggleTheme] = useTheme();
@@ -71,14 +71,14 @@ export default function App() {
 
   useEffect(() => {
     function onLogout() { setToken(""); }
-    window.addEventListener("palantir:logout", onLogout);
-    return () => window.removeEventListener("palantir:logout", onLogout);
+    window.addEventListener("sphera:logout", onLogout);
+    return () => window.removeEventListener("sphera:logout", onLogout);
   }, []);
 
   function handleLogin(newToken) { setToken(newToken); }
 
   function handleLogout() {
-    localStorage.removeItem("palantir_token");
+    localStorage.removeItem("sphera_token");
     setToken("");
   }
 

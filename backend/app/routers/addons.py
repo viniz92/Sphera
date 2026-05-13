@@ -52,7 +52,9 @@ ADDON_NAME_MAP: dict[str, str] = {
     "sealed-secrets-controller": "sealed-secrets",
     "reloader": "reloader",
     "descheduler": "descheduler",
-    "palantir-eks-dashboard": "palantir",
+    "palantir-eks-dashboard": "sphera",  # legacy k8s deployment name
+    "eks-dashboard": "sphera",
+    "sphera": "sphera",
 }
 
 # Namespaces scanned fully (every deployment/daemonset is treated as an addon)

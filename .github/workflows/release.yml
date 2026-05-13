@@ -5,8 +5,8 @@ on:
     branches: [main]
 
 env:
-  BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/palantir-backend
-  FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/palantir-frontend
+  BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/sphera-backend
+  FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/sphera-frontend
 
 jobs:
   build:

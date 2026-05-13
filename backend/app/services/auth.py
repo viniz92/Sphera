@@ -3,8 +3,8 @@ import secrets
 
 _tokens: set[str] = set()
 
-USERNAME = os.getenv("PALANTIR_USERNAME", "admin")
-PASSWORD = os.getenv("PALANTIR_PASSWORD", "admin")
+USERNAME = os.getenv("SPHERA_USERNAME", "admin")
+PASSWORD = os.getenv("SPHERA_PASSWORD", "admin")
 
 
 def login(username: str, password: str) -> str | None:

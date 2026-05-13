@@ -107,12 +107,12 @@ ADDON_META: dict[str, dict] = {
         "changelog_url": "https://github.com/argoproj/argo-workflows/releases",
         "github_url": "https://github.com/argoproj/argo-workflows",
     },
-    "palantir": {
-        "has_ui": True, "maintainer": "Seru", "category": "Observabilidade / EKS", "update_freq": "Contínuo",
-        "description": "Dashboard de monitoramento do cluster EKS — versões, addons, compatibilidade e node groups.",
-        "doc_url": "https://github.com/viniz92/palantir",
-        "changelog_url": "https://github.com/viniz92/palantir/releases",
-        "github_url": "https://github.com/viniz92/palantir",
+    "sphera": {
+        "has_ui": True, "maintainer": "Seru", "category": "Observabilidade / Kubernetes", "update_freq": "Contínuo",
+        "description": "Sphēra — plataforma de observabilidade Kubernetes. Versões, addons, compatibilidade, métricas, custos e node groups.",
+        "doc_url": "https://github.com/viniz92/sphera",
+        "changelog_url": "https://github.com/viniz92/sphera/releases",
+        "github_url": "https://github.com/viniz92/sphera",
     },
     "metrics-server": {
         "has_ui": False, "maintainer": "Kubernetes SIG", "category": "Observabilidade", "update_freq": "Por versão do EKS",

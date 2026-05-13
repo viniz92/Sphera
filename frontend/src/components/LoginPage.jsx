@@ -91,7 +91,7 @@ export function LoginPage({ onLogin }) {
         return;
       }
       const { token } = await res.json();
-      localStorage.setItem("palantir_token", token);
+      localStorage.setItem("sphera_token", token);
       onLogin(token);
     } catch {
       setError(t("connectionFailed"));
@@ -120,8 +120,8 @@ export function LoginPage({ onLogin }) {
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
           <AnimatedLogo />
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 18, fontWeight: 600, letterSpacing: "0.2em", color: "#e0e0f0" }}>PALANTIR</div>
-            <div style={{ fontSize: 10, letterSpacing: "0.18em", color: "#4A7FD4", marginTop: 3 }}>EKS DASHBOARD</div>
+            <div style={{ fontSize: 18, fontWeight: 600, letterSpacing: "0.2em", color: "#e0e0f0" }}>SPHĒRA</div>
+            <div style={{ fontSize: 10, letterSpacing: "0.18em", color: "#4A7FD4", marginTop: 3 }}>KUBERNETES OBSERVABILITY</div>
           </div>
         </div>
 

@@ -1,10 +1,10 @@
 image:
   backend:
-    repository: ghcr.io/viniz92/palantir-backend
+    repository: ghcr.io/viniz92/sphera-backend
     tag: latest
     pullPolicy: Always
   frontend:
-    repository: ghcr.io/viniz92/palantir-frontend
+    repository: ghcr.io/viniz92/sphera-frontend
     tag: latest
     pullPolicy: Always
 
@@ -15,7 +15,7 @@ prometheusUrl: "http://prometheus-server.monitoring.svc.cluster.local"
 ingress:
   enabled: true
   className: ""
-  host: palantir.dev.plataformaseru.com.br
+  host: sphera.dev.plataformaseru.com.br
   annotations:
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing

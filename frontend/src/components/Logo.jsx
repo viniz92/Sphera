@@ -7,7 +7,7 @@ export function Logo({ size = 40, showName = false, className = "" }) {
         viewBox="0 0 160 160"
         xmlns="http://www.w3.org/2000/svg"
         role="img"
-        aria-label="Palantir EKS Dashboard"
+        aria-label="Sphēra"
       >
         <defs>
           <clipPath id="logo-orb"><circle cx="80" cy="80" r="68"/></clipPath>
@@ -48,7 +48,7 @@ export function Logo({ size = 40, showName = false, className = "" }) {
           letterSpacing: "0.08em",
           lineHeight: 1,
         }}>
-          PALANTIR
+          SPHĒRA
         </span>
       )}
     </div>
