@@ -63,24 +63,35 @@ def _to_series(results: list[dict]) -> list[NodeSeries]:
 
 
 @router.get("/nodes/charts", response_model=NodeCharts)
-def node_charts():
+def node_charts(hours: float = 1.0, step: int = 0):
+    # Auto step: ~60 data points regardless of range
+    if step <= 0:
+        step = max(1, int(hours * 3600 / 60))
+    # Rate window: 2× step, minimum 30s
+    rate_w = f"{max(30, step * 2)}s"
     return NodeCharts(
         cpu=_to_series(_range_query(
-            '100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100)'
+            f'100 - (avg by (instance) (rate(node_cpu_seconds_total{{mode="idle"}}[{rate_w}])) * 100)',
+            hours=hours, step=step,
         )),
         memory=_to_series(_range_query(
-            '100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))'
+            '100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))',
+            hours=hours, step=step,
         )),
         net_rx=_to_series(_range_query(
-            'sum by (instance) (rate(node_network_receive_bytes_total{device!~"lo|veth.*|docker.*|cni.*|flannel.*"}[2m]))'
+            f'sum by (instance) (rate(node_network_receive_bytes_total{{device!~"lo|veth.*|docker.*|cni.*|flannel.*"}}[{rate_w}]))',
+            hours=hours, step=step,
         )),
         net_tx=_to_series(_range_query(
-            'sum by (instance) (rate(node_network_transmit_bytes_total{device!~"lo|veth.*|docker.*|cni.*|flannel.*"}[2m]))'
+            f'sum by (instance) (rate(node_network_transmit_bytes_total{{device!~"lo|veth.*|docker.*|cni.*|flannel.*"}}[{rate_w}]))',
+            hours=hours, step=step,
         )),
         disk_read=_to_series(_range_query(
-            'sum by (instance) (rate(node_disk_read_bytes_total[2m]))'
+            f'sum by (instance) (rate(node_disk_read_bytes_total[{rate_w}]))',
+            hours=hours, step=step,
         )),
         disk_write=_to_series(_range_query(
-            'sum by (instance) (rate(node_disk_written_bytes_total[2m]))'
+            f'sum by (instance) (rate(node_disk_written_bytes_total[{rate_w}]))',
+            hours=hours, step=step,
         )),
     )

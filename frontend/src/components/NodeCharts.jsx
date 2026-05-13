@@ -1,14 +1,22 @@
-import { useState, useEffect, useId } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { fetchNodeCharts } from "../api/client";
 
-const NODE_COLORS = [
-  "var(--color-text-info)",    // azul
-  "#4ade80",                   // verde
-  "#f472b6",                   // rosa
-  "#fb923c",                   // laranja
-  "#a78bfa",                   // roxo
-  "#facc15",                   // amarelo
+// ─── constants ───────────────────────────────────────────────────────────────
+
+const NODE_COLORS = ["#60a5fa", "#4ade80", "#f472b6", "#fb923c", "#a78bfa", "#facc15"];
+
+const TIME_RANGES = [
+  { label: "1m",  hours: 1 / 60,  step: 1,    refresh: 5  },
+  { label: "5m",  hours: 5 / 60,  step: 5,    refresh: 10 },
+  { label: "15m", hours: 15 / 60, step: 15,   refresh: 15 },
+  { label: "30m", hours: 0.5,     step: 30,   refresh: 20 },
+  { label: "1h",  hours: 1,       step: 60,   refresh: 30 },
+  { label: "3h",  hours: 3,       step: 180,  refresh: 60 },
+  { label: "6h",  hours: 6,       step: 360,  refresh: 120 },
+  { label: "24h", hours: 24,      step: 1440, refresh: 300 },
 ];
+
+// ─── formatters ──────────────────────────────────────────────────────────────
 
 function fmtBytes(v) {
   if (v == null || v < 0) return "—";
@@ -16,126 +24,209 @@ function fmtBytes(v) {
   if (v < 1048576) return `${(v / 1024).toFixed(1)} KB/s`;
   return `${(v / 1048576).toFixed(1)} MB/s`;
 }
-
-function fmtPct(v) {
-  return v != null ? `${v.toFixed(1)}%` : "—";
+function fmtPct(v)  { return v != null ? `${v.toFixed(1)}%` : "—"; }
+function shortHost(n) {
+  if (!n) return "?";
+  return n.replace(/\..*$/, "").replace(/^ip-/, "").replace(/-/g, ".");
+}
+function fmtTs(ts) {
+  return new Date(ts * 1000).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 }
 
-function shortHost(name) {
-  if (!name) return "?";
-  return name.replace(/\..*$/, "").replace(/^ip-/, "").replace(/-/g, ".");
-}
+// ─── single chart ─────────────────────────────────────────────────────────────
 
-function MultiLineChart({ seriesList, colors, fmt, height = 110, maxY }) {
-  const uid = useId().replace(/:/g, "");
-  const width = "100%";
-  const W = 100, H = height; // use percentage-based viewBox
-  const px = 1, py = 6;
+function Chart({ title, seriesList, nodeNames, colors, fmt, maxY, hoverIdx, onHover }) {
+  const svgRef = useRef(null);
+  const W = 100, H = 90, px = 1, py = 6;
   const IW = W - px * 2, IH = H - py * 2;
 
-  // Find global max for consistent Y scale
   const allVals = seriesList.flatMap(s => (s?.points ?? []).map(p => p.v));
   const globalMax = maxY ?? ((allVals.length > 0 ? Math.max(...allVals) : 1) || 1);
+  const totalPts = Math.max(...seriesList.map(s => s?.points?.length ?? 0), 1);
 
-  function toPath(points) {
-    if (!points || points.length < 2) return null;
-    const pts = points.map((p, i) => {
-      const x = px + (i / (points.length - 1)) * IW;
-      const y = py + IH - (p.v / globalMax) * IH;
-      return `${x.toFixed(2)},${y.toFixed(2)}`;
-    });
-    return pts.join(" ");
+  function xOf(i)   { return px + (i / (totalPts - 1)) * IW; }
+  function yOf(v)   { return py + IH - ((v / globalMax) * IH); }
+
+  function toPolyline(pts) {
+    if (!pts || pts.length < 2) return null;
+    return pts.map((p, i) => `${xOf(i).toFixed(2)},${yOf(p.v).toFixed(2)}`).join(" ");
+  }
+  function toArea(pts) {
+    if (!pts || pts.length < 2) return null;
+    const line = pts.map((p, i) => `L${xOf(i).toFixed(2)},${yOf(p.v).toFixed(2)}`).join(" ");
+    return `M${px},${(py + IH).toFixed(2)} ${line} L${(px + IW).toFixed(2)},${(py + IH).toFixed(2)} Z`;
   }
 
-  function toArea(points) {
-    if (!points || points.length < 2) return null;
-    const line = points.map((p, i) => {
-      const x = px + (i / (points.length - 1)) * IW;
-      const y = py + IH - (p.v / globalMax) * IH;
-      return `L${x.toFixed(2)},${y.toFixed(2)}`;
-    }).join(" ");
-    const x0 = px.toFixed(2), x1 = (px + IW).toFixed(2), yB = (py + IH).toFixed(2);
-    return `M${x0},${yB} ${line} L${x1},${yB} Z`;
+  function handleMouseMove(e) {
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const relX = (e.clientX - rect.left) / rect.width;
+    const idx = Math.round(relX * (totalPts - 1));
+    onHover(Math.max(0, Math.min(totalPts - 1, idx)));
   }
+
+  const hoverX = hoverIdx != null ? xOf(hoverIdx) : null;
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height }} preserveAspectRatio="none">
-      <defs>
-        {seriesList.map((s, i) => s?.points?.length > 1 && (
-          <linearGradient key={i} id={`g-${uid}-${i}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={colors[i % colors.length]} stopOpacity="0.18" />
-            <stop offset="100%" stopColor={colors[i % colors.length]} stopOpacity="0" />
-          </linearGradient>
+    <div style={{ background: "var(--color-background-secondary)", borderRadius: "var(--border-radius-md)", padding: "10px 12px", flex: 1, minWidth: 240 }}>
+      <div style={{ fontSize: 11, fontWeight: 600, color: "var(--color-text-secondary)", marginBottom: 6 }}>{title}</div>
+
+      <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: 90, display: "block", cursor: "crosshair" }}
+        onMouseMove={handleMouseMove} onMouseLeave={() => onHover(null)}>
+        <defs>
+          {seriesList.map((_, i) => (
+            <linearGradient key={i} id={`g-${title.replace(/\W/g,"")}-${i}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={colors[i % colors.length]} stopOpacity="0.2" />
+              <stop offset="100%" stopColor={colors[i % colors.length]} stopOpacity="0" />
+            </linearGradient>
+          ))}
+        </defs>
+
+        {/* grid */}
+        {[0.25, 0.5, 0.75, 1].map(f => (
+          <line key={f} x1={px} y1={py + IH * (1-f)} x2={px+IW} y2={py + IH * (1-f)}
+            stroke="rgba(255,255,255,0.05)" strokeWidth="0.3"/>
         ))}
-      </defs>
-      {/* grid lines */}
-      {[0.25, 0.5, 0.75, 1].map(f => (
-        <line key={f} x1={px} y1={py + IH * (1 - f)} x2={px + IW} y2={py + IH * (1 - f)}
-          stroke="rgba(255,255,255,0.04)" strokeWidth="0.3" />
-      ))}
-      {/* areas first */}
-      {seriesList.map((s, i) => {
-        const area = toArea(s?.points);
-        return area ? <path key={i} d={area} fill={`url(#g-${uid}-${i})`} /> : null;
-      })}
-      {/* lines */}
-      {seriesList.map((s, i) => {
-        const pts = toPath(s?.points);
-        return pts ? (
-          <polyline key={i} points={pts} fill="none"
-            stroke={colors[i % colors.length]} strokeWidth="0.9"
-            strokeLinejoin="round" strokeLinecap="round" />
-        ) : null;
-      })}
-      {/* current value dots */}
-      {seriesList.map((s, i) => {
-        const pts = s?.points;
-        if (!pts || pts.length < 2) return null;
-        const last = pts[pts.length - 1];
-        const x = px + IW;
-        const y = py + IH - (last.v / globalMax) * IH;
-        return <circle key={i} cx={x.toFixed(2)} cy={y.toFixed(2)} r="1.2" fill={colors[i % colors.length]} />;
-      })}
-    </svg>
-  );
-}
 
-function Chart({ title, seriesList, nodeNames, colors, fmt, maxY }) {
-  return (
-    <div style={{ background: "var(--color-background-secondary)", borderRadius: "var(--border-radius-md)", padding: "12px 14px", flex: 1, minWidth: 260 }}>
-      <div style={{ fontSize: 12, fontWeight: 600, color: "var(--color-text-secondary)", marginBottom: 8 }}>{title}</div>
-      <div style={{ borderRadius: 4, overflow: "hidden" }}>
-        <MultiLineChart seriesList={seriesList} colors={colors} fmt={fmt} maxY={maxY} />
-      </div>
-      {/* Legend */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 14px", marginTop: 8 }}>
+        {/* areas */}
+        {seriesList.map((s, i) => {
+          const area = toArea(s?.points);
+          return area ? <path key={i} d={area} fill={`url(#g-${title.replace(/\W/g,"")}-${i})`}/> : null;
+        })}
+
+        {/* lines */}
+        {seriesList.map((s, i) => {
+          const pts = toPolyline(s?.points);
+          return pts ? (
+            <polyline key={i} points={pts} fill="none" stroke={colors[i % colors.length]}
+              strokeWidth="1.2" strokeLinejoin="round" strokeLinecap="round"/>
+          ) : null;
+        })}
+
+        {/* crosshair */}
+        {hoverX != null && (
+          <>
+            <line x1={hoverX} y1={py} x2={hoverX} y2={py + IH}
+              stroke="rgba(255,255,255,0.3)" strokeWidth="0.4" strokeDasharray="1 1"/>
+            {seriesList.map((s, i) => {
+              const p = s?.points?.[hoverIdx];
+              if (!p) return null;
+              return <circle key={i} cx={hoverX.toFixed(2)} cy={yOf(p.v).toFixed(2)}
+                r="1.8" fill={colors[i % colors.length]} stroke="rgba(0,0,0,0.5)" strokeWidth="0.4"/>;
+            })}
+          </>
+        )}
+
+        {/* invisible hit area */}
+        <rect x={px} y={py} width={IW} height={IH} fill="transparent"/>
+      </svg>
+
+      {/* legend */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "3px 12px", marginTop: 6 }}>
         {nodeNames.map((name, i) => {
           const pts = seriesList[i]?.points;
-          const cur = pts?.length > 0 ? pts[pts.length - 1].v : null;
+          const val = hoverIdx != null ? pts?.[hoverIdx]?.v : pts?.[pts.length - 1]?.v;
           return (
-            <div key={name} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              <span style={{ width: 10, height: 3, borderRadius: 2, background: colors[i % colors.length], display: "inline-block", flexShrink: 0 }} />
+            <div key={name} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <span style={{ width: 10, height: 2.5, borderRadius: 2, background: colors[i % colors.length], display: "inline-block" }}/>
               <span style={{ fontSize: 10, color: "var(--color-text-tertiary)" }}>{shortHost(name)}</span>
-              <span style={{ fontSize: 10, fontWeight: 600, color: colors[i % colors.length] }}>{fmt(cur)}</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: colors[i % colors.length] }}>{fmt(val ?? null)}</span>
             </div>
           );
         })}
       </div>
-      <div style={{ fontSize: 9, color: "var(--color-text-tertiary)", marginTop: 4, textAlign: "right" }}>última 1h</div>
     </div>
   );
 }
+
+// ─── tooltip ─────────────────────────────────────────────────────────────────
+
+function Tooltip({ charts, nodes, hoverIdx, colors, mouse }) {
+  if (hoverIdx == null || !mouse) return null;
+
+  const allTs = charts?.cpu?.find(Boolean)?.points?.[hoverIdx]?.t;
+
+  return (
+    <div style={{
+      position: "fixed", left: mouse.x + 16, top: mouse.y - 10,
+      background: "rgba(10,10,20,0.95)", border: "0.5px solid rgba(255,255,255,0.12)",
+      borderRadius: 8, padding: "8px 12px", zIndex: 999, pointerEvents: "none",
+      boxShadow: "0 8px 24px rgba(0,0,0,0.6)", minWidth: 160,
+    }}>
+      {allTs && (
+        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginBottom: 6, fontFamily: "monospace" }}>
+          {fmtTs(allTs)}
+        </div>
+      )}
+      {nodes.map((n, i) => {
+        const cpu = charts?.cpu?.find(s => s.node === n || s.node.startsWith(n.split(".")[0]))?.points?.[hoverIdx]?.v;
+        const mem = charts?.memory?.find(s => s.node === n || s.node.startsWith(n.split(".")[0]))?.points?.[hoverIdx]?.v;
+        return (
+          <div key={n} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: colors[i % colors.length], flexShrink: 0 }}/>
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", minWidth: 90 }}>{shortHost(n)}</span>
+            <span style={{ fontSize: 11, color: colors[i % colors.length], fontWeight: 600, fontFamily: "monospace" }}>
+              {fmtPct(cpu)}
+            </span>
+            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", fontFamily: "monospace" }}>
+              {fmtPct(mem)}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── main component ───────────────────────────────────────────────────────────
 
 export function NodeCharts() {
   const [charts, setCharts] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [rangeIdx, setRangeIdx] = useState(4); // default 1h
+  const [hoverIdx, setHoverIdx] = useState(null);
+  const [mouse, setMouse] = useState(null);
+  const [lastRefresh, setLastRefresh] = useState(null);
+  const [live, setLive] = useState(false);
+  const timerRef = useRef(null);
 
+  const range = TIME_RANGES[rangeIdx];
+
+  const load = useCallback(async (showLoading = false) => {
+    if (showLoading) setLoading(true);
+    try {
+      const data = await fetchNodeCharts(range.hours, range.step);
+      setCharts(data);
+      setLastRefresh(new Date());
+      setError(null);
+    } catch {
+      setError("Prometheus indisponível");
+    } finally {
+      if (showLoading) setLoading(false);
+    }
+  }, [range.hours, range.step]);
+
+  // Initial + range-change load
   useEffect(() => {
-    fetchNodeCharts()
-      .then(setCharts)
-      .catch(() => setError("Prometheus indisponível"))
-      .finally(() => setLoading(false));
+    load(true);
+  }, [load]);
+
+  // Auto-refresh
+  useEffect(() => {
+    clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setLive(true);
+      load(false).finally(() => setTimeout(() => setLive(false), 600));
+    }, range.refresh * 1000);
+    return () => clearInterval(timerRef.current);
+  }, [load, range.refresh]);
+
+  // Global mouse tracking for tooltip
+  useEffect(() => {
+    function onMove(e) { setMouse({ x: e.clientX, y: e.clientY }); }
+    window.addEventListener("mousemove", onMove);
+    return () => window.removeEventListener("mousemove", onMove);
   }, []);
 
   if (loading) return (
@@ -147,12 +238,10 @@ export function NodeCharts() {
     <div style={{ padding: "0.75rem 0", fontSize: 12, color: "var(--color-text-tertiary)" }}>{error ?? "Dados indisponíveis"}</div>
   );
 
-  // Collect all node names across all metrics
-  const nodeSet = new Set([
+  const nodes = [...new Set([
     ...charts.cpu.map(s => s.node),
     ...charts.memory.map(s => s.node),
-  ]);
-  const nodes = [...nodeSet].sort();
+  ])].sort();
 
   if (nodes.length === 0) return (
     <div style={{ padding: "0.75rem 0", fontSize: 12, color: "var(--color-text-tertiary)" }}>
@@ -160,95 +249,67 @@ export function NodeCharts() {
     </div>
   );
 
-  function getSeriesList(arr) {
-    return nodes.map(n =>
-      arr.find(s => s.node === n || s.node.startsWith(n.split(".")[0])) ?? null
-    );
+  function get(arr, node) {
+    return arr.find(s => s.node === node || s.node.startsWith(node.split(".")[0])) ?? null;
   }
-
-  // Combine RX+TX into single chart by merging points: v=rx, v2=tx
-  function combinedNetSeries() {
-    return nodes.map(n => {
-      const rx = charts.net_rx.find(s => s.node === n || s.node.startsWith(n.split(".")[0]));
-      const tx = charts.net_tx.find(s => s.node === n || s.node.startsWith(n.split(".")[0]));
-      if (!rx && !tx) return null;
-      const pts = (rx?.points ?? tx?.points ?? []).map((p, i) => ({
-        t: p.t,
-        v: rx?.points?.[i]?.v ?? 0,
-      }));
-      return { node: n, points: pts };
-    });
-  }
-
-  function combinedDiskSeries() {
-    return nodes.map(n => {
-      const rd = charts.disk_read.find(s => s.node === n || s.node.startsWith(n.split(".")[0]));
-      const pts = (rd?.points ?? []).map(p => ({ t: p.t, v: p.v }));
-      return pts.length > 0 ? { node: n, points: pts } : null;
-    });
-  }
-
-  function combinedDiskWriteSeries() {
-    return nodes.map(n => {
-      const wr = charts.disk_write.find(s => s.node === n || s.node.startsWith(n.split(".")[0]));
-      const pts = (wr?.points ?? []).map(p => ({ t: p.t, v: p.v }));
-      return pts.length > 0 ? { node: n, points: pts } : null;
-    });
-  }
+  function getList(arr) { return nodes.map(n => get(arr, n)); }
 
   return (
     <div style={{ marginTop: "1.25rem" }}>
-      <div style={{ fontSize: 12, fontWeight: 500, color: "var(--color-text-secondary)", letterSpacing: ".04em", textTransform: "uppercase", marginBottom: 12 }}>
-        Histórico de métricas — última hora
+      {/* Header: title + range selector + live indicator */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
+        <span style={{ fontSize: 12, fontWeight: 500, color: "var(--color-text-secondary)", letterSpacing: ".04em", textTransform: "uppercase" }}>
+          Histórico de métricas
+        </span>
+
+        {/* Range buttons */}
+        <div style={{ display: "flex", gap: 2, background: "var(--color-background-secondary)", borderRadius: 8, padding: 3 }}>
+          {TIME_RANGES.map((r, i) => (
+            <button key={r.label} onClick={() => setRangeIdx(i)} style={{
+              padding: "3px 10px", fontSize: 11, fontWeight: i === rangeIdx ? 600 : 400,
+              borderRadius: 6, border: "none", cursor: "pointer",
+              background: i === rangeIdx ? "#3b82f6" : "transparent",
+              color: i === rangeIdx ? "#fff" : "var(--color-text-tertiary)",
+              transition: "all 0.15s",
+            }}>
+              {r.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Live indicator */}
+        <div style={{ display: "flex", alignItems: "center", gap: 5, marginLeft: "auto" }}>
+          <span style={{
+            width: 7, height: 7, borderRadius: "50%",
+            background: live ? "#4ade80" : "var(--color-border-secondary)",
+            boxShadow: live ? "0 0 6px #4ade80" : "none",
+            transition: "all 0.3s", flexShrink: 0,
+          }}/>
+          <span style={{ fontSize: 10, color: "var(--color-text-tertiary)" }}>
+            {lastRefresh ? `${lastRefresh.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}` : "—"}
+          </span>
+          <span style={{ fontSize: 10, color: "var(--color-text-tertiary)" }}>· refresh {range.refresh}s</span>
+        </div>
       </div>
+
+      {/* Charts grid 2x3 */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        <Chart
-          title="CPU %"
-          seriesList={getSeriesList(charts.cpu)}
-          nodeNames={nodes}
-          colors={NODE_COLORS}
-          fmt={fmtPct}
-          maxY={100}
-        />
-        <Chart
-          title="Memória %"
-          seriesList={getSeriesList(charts.memory)}
-          nodeNames={nodes}
-          colors={NODE_COLORS}
-          fmt={fmtPct}
-          maxY={100}
-        />
-        <Chart
-          title="Rede — RX (entrada)"
-          seriesList={combinedNetSeries()}
-          nodeNames={nodes}
-          colors={NODE_COLORS}
-          fmt={fmtBytes}
-        />
-        <Chart
-          title="Disco — Leitura"
-          seriesList={combinedDiskSeries()}
-          nodeNames={nodes}
-          colors={NODE_COLORS}
-          fmt={fmtBytes}
-        />
-        <Chart
-          title="Rede — TX (saída)"
-          seriesList={nodes.map(n =>
-            charts.net_tx.find(s => s.node === n || s.node.startsWith(n.split(".")[0])) ?? null
-          )}
-          nodeNames={nodes}
-          colors={NODE_COLORS}
-          fmt={fmtBytes}
-        />
-        <Chart
-          title="Disco — Escrita"
-          seriesList={combinedDiskWriteSeries()}
-          nodeNames={nodes}
-          colors={NODE_COLORS}
-          fmt={fmtBytes}
-        />
+        <Chart title="CPU %" seriesList={getList(charts.cpu)} nodeNames={nodes}
+          colors={NODE_COLORS} fmt={fmtPct} maxY={100} hoverIdx={hoverIdx} onHover={setHoverIdx}/>
+        <Chart title="Memória %" seriesList={getList(charts.memory)} nodeNames={nodes}
+          colors={NODE_COLORS} fmt={fmtPct} maxY={100} hoverIdx={hoverIdx} onHover={setHoverIdx}/>
+        <Chart title="Rede — RX (entrada)" seriesList={getList(charts.net_rx)} nodeNames={nodes}
+          colors={NODE_COLORS} fmt={fmtBytes} hoverIdx={hoverIdx} onHover={setHoverIdx}/>
+        <Chart title="Rede — TX (saída)" seriesList={getList(charts.net_tx)} nodeNames={nodes}
+          colors={NODE_COLORS} fmt={fmtBytes} hoverIdx={hoverIdx} onHover={setHoverIdx}/>
+        <Chart title="Disco — Leitura" seriesList={getList(charts.disk_read)} nodeNames={nodes}
+          colors={NODE_COLORS} fmt={fmtBytes} hoverIdx={hoverIdx} onHover={setHoverIdx}/>
+        <Chart title="Disco — Escrita" seriesList={getList(charts.disk_write)} nodeNames={nodes}
+          colors={NODE_COLORS} fmt={fmtBytes} hoverIdx={hoverIdx} onHover={setHoverIdx}/>
       </div>
+
+      {/* Global tooltip */}
+      <Tooltip charts={charts} nodes={nodes} hoverIdx={hoverIdx} colors={NODE_COLORS} mouse={mouse}/>
     </div>
   );
 }

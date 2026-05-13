@@ -59,7 +59,7 @@ export async function fetchCosts() {
   return data;
 }
 
-export async function fetchNodeCharts() {
-  const { data } = await api.get("/prometheus/nodes/charts");
+export async function fetchNodeCharts(hours = 1, step = 0) {
+  const { data } = await api.get("/prometheus/nodes/charts", { params: { hours, step } });
   return data;
 }
