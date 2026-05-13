@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { fetchPodMetrics } from "../api/client";
 import { useLanguage } from "../context/LanguageContext";
+import { PodDrawer } from "./PodDrawer";
 
 const SYSTEM_NS = new Set([
   "kube-system", "kube-public", "kube-node-lease",
@@ -89,6 +90,7 @@ export function MonitorPanel() {
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("desc");
   const [search, setSearch] = useState("");
+  const [selectedPod, setSelectedPod] = useState(null);
 
   useEffect(() => {
     fetchPodMetrics()
@@ -163,6 +165,8 @@ export function MonitorPanel() {
         <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", marginLeft: "auto" }}>{visible.length} pods</span>
       </div>
 
+      <PodDrawer pod={selectedPod} onClose={() => setSelectedPod(null)} />
+
       {visible.length === 0
         ? <div style={{ fontSize: 13, color: "var(--color-text-secondary)", padding: "1rem 0" }}>{t("noPods")}</div>
         : (
@@ -186,7 +190,11 @@ export function MonitorPanel() {
                 const ss = statusStyle(p.status);
                 const isProblematic = !OK_STATUSES.has(p.status);
                 return (
-                  <tr key={i} style={{ borderBottom: "0.5px solid var(--color-border-tertiary)", background: isProblematic ? "rgba(248,113,113,0.03)" : "none" }}>
+                  <tr key={i} onClick={() => setSelectedPod(p)}
+                    style={{ borderBottom: "0.5px solid var(--color-border-tertiary)", background: isProblematic ? "rgba(248,113,113,0.03)" : "none", cursor: "pointer" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.03)"}
+                    onMouseLeave={e => e.currentTarget.style.background = isProblematic ? "rgba(248,113,113,0.03)" : "none"}
+                  >
                     <td style={{ padding: "5px 6px", fontSize: 11, color: "var(--color-text-tertiary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.namespace}</td>
                     <td style={{ padding: "5px 6px", fontSize: 12, fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--color-text-primary)" }} title={p.name}>{p.name}</td>
                     <td style={{ padding: "5px 8px" }}>

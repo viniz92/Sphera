@@ -59,6 +59,11 @@ export async function fetchCosts() {
   return data;
 }
 
+export async function fetchPodDetail(namespace, name) {
+  const { data } = await api.get(`/pods/${namespace}/${name}`);
+  return data;
+}
+
 export async function fetchNodeCharts(hours = 1, step = 0) {
   const { data } = await api.get("/prometheus/nodes/charts", { params: { hours, step } });
   return data;
