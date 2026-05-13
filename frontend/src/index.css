@@ -52,8 +52,8 @@ button { font-family: inherit; cursor: pointer; }
 
 /* ── Login animations ─────────────────────────────────────────────────────── */
 @keyframes orb-breathe {
-  0%, 100% { transform: scale(1);   filter: drop-shadow(0 0 18px rgba(255,85,0,.25)); }
-  50%       { transform: scale(1.04); filter: drop-shadow(0 0 32px rgba(255,85,0,.5)); }
+  0%, 100% { transform: scale(1);   filter: drop-shadow(0 0 18px rgba(100,120,255,.3)); }
+  50%       { transform: scale(1.04); filter: drop-shadow(0 0 36px rgba(120,100,255,.6)); }
 }
 @keyframes eyes-pulse {
   0%, 100% { opacity: 1; }
