@@ -53,3 +53,8 @@ export async function fetchPodMetrics() {
   const { data } = await api.get("/metrics/pods");
   return data;
 }
+
+export async function fetchCosts() {
+  const { data } = await api.get("/costs/");
+  return data;
+}

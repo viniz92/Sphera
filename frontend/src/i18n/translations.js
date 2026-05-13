@@ -15,6 +15,7 @@ export const translations = {
     tabNodes: "Nós",
     tabEvents: "Eventos",
     tabMonitor: "Monitor",
+    tabCosts: "Custos",
 
     // ClusterCard meta
     currentVersion: "Versão atual",
@@ -115,6 +116,7 @@ export const translations = {
     tabNodes: "Nodes",
     tabEvents: "Events",
     tabMonitor: "Monitor",
+    tabCosts: "Costs",
 
     // ClusterCard meta
     currentVersion: "Current version",
@@ -212,6 +214,7 @@ export const translations = {
     tabNodes: "Nodos",
     tabEvents: "Eventos",
     tabMonitor: "Monitor",
+    tabCosts: "Costos",
     currentVersion: "Versión actual",
     nextVersion: "Próxima versión",
     endOfSupport: "Fin del soporte",

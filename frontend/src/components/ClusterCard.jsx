@@ -3,6 +3,7 @@ import { EolBar } from "./EolBar";
 import { AddonTable } from "./AddonTable";
 import { EventsPanel } from "./EventsPanel";
 import { MonitorPanel } from "./MonitorPanel";
+import { CostsPanel } from "./CostsPanel";
 import { useLanguage } from "../context/LanguageContext";
 import { fetchNodeMetrics } from "../api/client";
 
@@ -180,26 +181,24 @@ function NodeGroupsSection({ nodeGroups }) {
                       const m = nodeMetrics[inst.node_name];
                       return (
                         <tr key={inst.instance_id} style={{ borderBottom: "0.5px solid var(--color-border-tertiary)", opacity: dimmed ? 0.35 : 1 }}>
-                          <td colSpan={4} style={{ padding: "2px 6px 6px 20px" }}>
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: "3px 12px", alignItems: "center" }}>
-                              <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", fontFamily: "monospace" }}>{inst.instance_id}</span>
-                              {inst.private_ip && <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>{inst.private_ip}</span>}
-                              {inst.az && <span style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>{inst.az}</span>}
-                              {inst.node_name && inst.node_name !== inst.instance_id && (
-                                <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", fontFamily: "monospace" }}>{inst.node_name}</span>
-                              )}
-                              {m && (
-                                <span style={{ display: "inline-flex", alignItems: "center", gap: 8, marginLeft: 4 }}>
+                          <td colSpan={4} style={{ padding: "2px 6px 7px 22px" }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "160px 108px 90px 1fr auto", gap: "0 14px", alignItems: "center" }}>
+                              <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={inst.instance_id}>{inst.instance_id}</span>
+                              <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>{inst.private_ip ?? "—"}</span>
+                              <span style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>{inst.az ?? "—"}</span>
+                              <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={inst.node_name}>{inst.node_name && inst.node_name !== inst.instance_id ? inst.node_name : "—"}</span>
+                              {m ? (
+                                <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
                                   <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
-                                    <span style={{ fontSize: 10, color: "var(--color-text-tertiary)" }}>CPU</span>
+                                    <span style={{ fontSize: 10, color: "var(--color-text-tertiary)", minWidth: 24 }}>CPU</span>
                                     <MiniBar percent={m.cpu_percent} color="var(--color-text-info)" />
                                   </span>
                                   <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
-                                    <span style={{ fontSize: 10, color: "var(--color-text-tertiary)" }}>MEM</span>
+                                    <span style={{ fontSize: 10, color: "var(--color-text-tertiary)", minWidth: 28 }}>MEM</span>
                                     <MiniBar percent={m.memory_percent} color="var(--color-text-success)" />
                                   </span>
                                 </span>
-                              )}
+                              ) : <span />}
                             </div>
                           </td>
                         </tr>
@@ -273,10 +272,11 @@ function UpgradePath({ cluster }) {
 }
 
 const TAB_KEYS = [
-  { id: "addons", key: "tabAddons" },
-  { id: "nos", key: "tabNodes" },
+  { id: "addons",  key: "tabAddons" },
+  { id: "nos",     key: "tabNodes" },
   { id: "eventos", key: "tabEvents" },
   { id: "monitor", key: "tabMonitor" },
+  { id: "costs",   key: "tabCosts" },
 ];
 
 export function ClusterCard({ cluster, addons, addonsLoading }) {
@@ -334,6 +334,7 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
       {activeTab === "nos" && <NodeGroupsSection nodeGroups={cluster.node_groups} />}
       {activeTab === "eventos" && <EventsPanel key={lang} />}
       {activeTab === "monitor" && <MonitorPanel key={lang} />}
+      {activeTab === "costs"   && <CostsPanel key={lang} />}
     </div>
   );
 }
