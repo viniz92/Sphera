@@ -1,11 +1,20 @@
 import { useState, useEffect, useId } from "react";
 import { fetchNodeCharts } from "../api/client";
 
+const NODE_COLORS = [
+  "var(--color-text-info)",    // azul
+  "#4ade80",                   // verde
+  "#f472b6",                   // rosa
+  "#fb923c",                   // laranja
+  "#a78bfa",                   // roxo
+  "#facc15",                   // amarelo
+];
+
 function fmtBytes(v) {
-  if (v == null) return "—";
+  if (v == null || v < 0) return "—";
   if (v < 1024) return `${v.toFixed(0)} B/s`;
-  if (v < 1024 * 1024) return `${(v / 1024).toFixed(1)} KB/s`;
-  return `${(v / 1024 / 1024).toFixed(1)} MB/s`;
+  if (v < 1048576) return `${(v / 1024).toFixed(1)} KB/s`;
+  return `${(v / 1048576).toFixed(1)} MB/s`;
 }
 
 function fmtPct(v) {
@@ -13,85 +22,106 @@ function fmtPct(v) {
 }
 
 function shortHost(name) {
+  if (!name) return "?";
   return name.replace(/\..*$/, "").replace(/^ip-/, "").replace(/-/g, ".");
 }
 
-function Sparkline({ points, color, color2, height = 52, width = 200 }) {
+function MultiLineChart({ seriesList, colors, fmt, height = 110, maxY }) {
   const uid = useId().replace(/:/g, "");
+  const width = "100%";
+  const W = 100, H = height; // use percentage-based viewBox
+  const px = 1, py = 6;
+  const IW = W - px * 2, IH = H - py * 2;
 
-  if (!points || points.length < 2) {
-    return (
-      <svg width={width} height={height}>
-        <text x={width / 2} y={height / 2 + 4} textAnchor="middle" fontSize="10" fill="var(--color-text-tertiary)">sem dados</text>
-      </svg>
-    );
+  // Find global max for consistent Y scale
+  const allVals = seriesList.flatMap(s => (s?.points ?? []).map(p => p.v));
+  const globalMax = maxY ?? (allVals.length > 0 ? Math.max(...allVals) : 1) || 1;
+
+  function toPath(points) {
+    if (!points || points.length < 2) return null;
+    const pts = points.map((p, i) => {
+      const x = px + (i / (points.length - 1)) * IW;
+      const y = py + IH - (p.v / globalMax) * IH;
+      return `${x.toFixed(2)},${y.toFixed(2)}`;
+    });
+    return pts.join(" ");
   }
 
-  const px = 2, py = 3;
-  const W = width - px * 2, H = height - py * 2;
-
-  function buildPath(vals) {
-    const minV = Math.min(...vals);
-    const maxV = Math.max(...vals);
-    const range = maxV - minV || 1;
-    const xs = vals.map((_, i) => px + (i / (vals.length - 1)) * W);
-    const ys = vals.map(v => py + H - ((v - minV) / range) * H);
-    return { xs, ys, minV, maxV };
-  }
-
-  // Primary series
-  const v1 = points.map(p => (Array.isArray(p) ? p[0] : p.v));
-  const { xs, ys, maxV: max1 } = buildPath(v1);
-  const line1 = xs.map((x, i) => `${x},${ys[i]}`).join(" ");
-  const area1 = `M${px},${py + H} ` + xs.map((x, i) => `L${x},${ys[i]}`).join(" ") + ` L${px + W},${py + H} Z`;
-  const cur1 = v1[v1.length - 1];
-
-  // Optional secondary series (e.g. TX or write)
-  let line2 = null, cur2 = null;
-  if (color2 && points[0]?.v2 != null) {
-    const v2 = points.map(p => p.v2);
-    const { xs: xs2, ys: ys2, maxV: max2 } = buildPath(v2);
-    line2 = xs2.map((x, i) => `${x},${ys2[i]}`).join(" ");
-    cur2 = v2[v2.length - 1];
+  function toArea(points) {
+    if (!points || points.length < 2) return null;
+    const line = points.map((p, i) => {
+      const x = px + (i / (points.length - 1)) * IW;
+      const y = py + IH - (p.v / globalMax) * IH;
+      return `L${x.toFixed(2)},${y.toFixed(2)}`;
+    }).join(" ");
+    const x0 = px.toFixed(2), x1 = (px + IW).toFixed(2), yB = (py + IH).toFixed(2);
+    return `M${x0},${yB} ${line} L${x1},${yB} Z`;
   }
 
   return (
-    <svg width={width} height={height} style={{ overflow: "visible" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height }} preserveAspectRatio="none">
       <defs>
-        <linearGradient id={`g-${uid}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
-          <stop offset="100%" stopColor={color} stopOpacity="0.01" />
-        </linearGradient>
+        {seriesList.map((s, i) => s?.points?.length > 1 && (
+          <linearGradient key={i} id={`g-${uid}-${i}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={colors[i % colors.length]} stopOpacity="0.18" />
+            <stop offset="100%" stopColor={colors[i % colors.length]} stopOpacity="0" />
+          </linearGradient>
+        ))}
       </defs>
-      <path d={area1} fill={`url(#g-${uid})`} />
-      <polyline points={line1} fill="none" stroke={color} strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
-      {line2 && <polyline points={line2} fill="none" stroke={color2} strokeWidth="1.4" strokeLinejoin="round" strokeLinecap="round" strokeDasharray="3 2" />}
-      <circle cx={xs[xs.length - 1]} cy={ys[ys.length - 1]} r="2.5" fill={color} />
+      {/* grid lines */}
+      {[0.25, 0.5, 0.75, 1].map(f => (
+        <line key={f} x1={px} y1={py + IH * (1 - f)} x2={px + IW} y2={py + IH * (1 - f)}
+          stroke="rgba(255,255,255,0.04)" strokeWidth="0.3" />
+      ))}
+      {/* areas first */}
+      {seriesList.map((s, i) => {
+        const area = toArea(s?.points);
+        return area ? <path key={i} d={area} fill={`url(#g-${uid}-${i})`} /> : null;
+      })}
+      {/* lines */}
+      {seriesList.map((s, i) => {
+        const pts = toPath(s?.points);
+        return pts ? (
+          <polyline key={i} points={pts} fill="none"
+            stroke={colors[i % colors.length]} strokeWidth="0.9"
+            strokeLinejoin="round" strokeLinecap="round" />
+        ) : null;
+      })}
+      {/* current value dots */}
+      {seriesList.map((s, i) => {
+        const pts = s?.points;
+        if (!pts || pts.length < 2) return null;
+        const last = pts[pts.length - 1];
+        const x = px + IW;
+        const y = py + IH - (last.v / globalMax) * IH;
+        return <circle key={i} cx={x.toFixed(2)} cy={y.toFixed(2)} r="1.2" fill={colors[i % colors.length]} />;
+      })}
     </svg>
   );
 }
 
-function ChartCard({ title, series1, series2, color1, color2, fmt1, fmt2, label2 }) {
-  const cur1 = series1?.points?.length > 0 ? series1.points[series1.points.length - 1].v : null;
-  const cur2 = series2?.points?.length > 0 ? series2.points[series2.points.length - 1].v : null;
-
-  // Merge series2 into series1 points as v2 (align by index)
-  let merged = series1?.points ?? [];
-  if (series2?.points?.length > 0 && merged.length > 0) {
-    merged = merged.map((p, i) => ({ ...p, v2: series2.points[i]?.v ?? null }));
-  }
-
+function Chart({ title, seriesList, nodeNames, colors, fmt, maxY }) {
   return (
-    <div style={{ background: "var(--color-background-secondary)", borderRadius: "var(--border-radius-md)", padding: "10px 12px", flex: 1, minWidth: 200 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-        <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", fontWeight: 500 }}>{title}</span>
-        <span style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: color1 }}>{fmt1(cur1)}</span>
-          {cur2 != null && <span style={{ fontSize: 10, color: color2 }}>{label2} {fmt2(cur2)}</span>}
-        </span>
+    <div style={{ background: "var(--color-background-secondary)", borderRadius: "var(--border-radius-md)", padding: "12px 14px", flex: 1, minWidth: 260 }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: "var(--color-text-secondary)", marginBottom: 8 }}>{title}</div>
+      <div style={{ borderRadius: 4, overflow: "hidden" }}>
+        <MultiLineChart seriesList={seriesList} colors={colors} fmt={fmt} maxY={maxY} />
       </div>
-      <Sparkline points={merged} color={color1} color2={color2} width={196} height={50} />
-      <div style={{ fontSize: 9, color: "var(--color-text-tertiary)", marginTop: 3, textAlign: "right" }}>última 1h</div>
+      {/* Legend */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 14px", marginTop: 8 }}>
+        {nodeNames.map((name, i) => {
+          const pts = seriesList[i]?.points;
+          const cur = pts?.length > 0 ? pts[pts.length - 1].v : null;
+          return (
+            <div key={name} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <span style={{ width: 10, height: 3, borderRadius: 2, background: colors[i % colors.length], display: "inline-block", flexShrink: 0 }} />
+              <span style={{ fontSize: 10, color: "var(--color-text-tertiary)" }}>{shortHost(name)}</span>
+              <span style={{ fontSize: 10, fontWeight: 600, color: colors[i % colors.length] }}>{fmt(cur)}</span>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ fontSize: 9, color: "var(--color-text-tertiary)", marginTop: 4, textAlign: "right" }}>última 1h</div>
     </div>
   );
 }
@@ -113,27 +143,57 @@ export function NodeCharts() {
       Carregando gráficos do Prometheus...
     </div>
   );
-
   if (error || !charts) return (
-    <div style={{ padding: "0.75rem 0", fontSize: 12, color: "var(--color-text-tertiary)" }}>
-      {error ?? "Dados indisponíveis"}
-    </div>
+    <div style={{ padding: "0.75rem 0", fontSize: 12, color: "var(--color-text-tertiary)" }}>{error ?? "Dados indisponíveis"}</div>
   );
 
-  // Build per-node map
-  const nodes = [...new Set([
+  // Collect all node names across all metrics
+  const nodeSet = new Set([
     ...charts.cpu.map(s => s.node),
     ...charts.memory.map(s => s.node),
-  ])].sort();
+  ]);
+  const nodes = [...nodeSet].sort();
 
   if (nodes.length === 0) return (
     <div style={{ padding: "0.75rem 0", fontSize: 12, color: "var(--color-text-tertiary)" }}>
-      Aguardando dados do Prometheus...
+      Aguardando dados do Prometheus (pode levar ~2 min após instalação)...
     </div>
   );
 
-  function getSeries(arr, node) {
-    return arr.find(s => s.node === node || s.node.includes(node.split(".")[0])) ?? null;
+  function getSeriesList(arr) {
+    return nodes.map(n =>
+      arr.find(s => s.node === n || s.node.startsWith(n.split(".")[0])) ?? null
+    );
+  }
+
+  // Combine RX+TX into single chart by merging points: v=rx, v2=tx
+  function combinedNetSeries() {
+    return nodes.map(n => {
+      const rx = charts.net_rx.find(s => s.node === n || s.node.startsWith(n.split(".")[0]));
+      const tx = charts.net_tx.find(s => s.node === n || s.node.startsWith(n.split(".")[0]));
+      if (!rx && !tx) return null;
+      const pts = (rx?.points ?? tx?.points ?? []).map((p, i) => ({
+        t: p.t,
+        v: rx?.points?.[i]?.v ?? 0,
+      }));
+      return { node: n, points: pts };
+    });
+  }
+
+  function combinedDiskSeries() {
+    return nodes.map(n => {
+      const rd = charts.disk_read.find(s => s.node === n || s.node.startsWith(n.split(".")[0]));
+      const pts = (rd?.points ?? []).map(p => ({ t: p.t, v: p.v }));
+      return pts.length > 0 ? { node: n, points: pts } : null;
+    });
+  }
+
+  function combinedDiskWriteSeries() {
+    return nodes.map(n => {
+      const wr = charts.disk_write.find(s => s.node === n || s.node.startsWith(n.split(".")[0]));
+      const pts = (wr?.points ?? []).map(p => ({ t: p.t, v: p.v }));
+      return pts.length > 0 ? { node: n, points: pts } : null;
+    });
   }
 
   return (
@@ -141,50 +201,53 @@ export function NodeCharts() {
       <div style={{ fontSize: 12, fontWeight: 500, color: "var(--color-text-secondary)", letterSpacing: ".04em", textTransform: "uppercase", marginBottom: 12 }}>
         Histórico de métricas — última hora
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-        {nodes.map(node => (
-          <div key={node}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "var(--color-text-secondary)", marginBottom: 8, fontFamily: "monospace" }}>
-              {shortHost(node)}
-            </div>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <ChartCard
-                title="CPU"
-                series1={getSeries(charts.cpu, node)}
-                color1="var(--color-text-info)"
-                fmt1={fmtPct}
-                fmt2={fmtPct}
-              />
-              <ChartCard
-                title="Memória"
-                series1={getSeries(charts.memory, node)}
-                color1="var(--color-text-success)"
-                fmt1={fmtPct}
-                fmt2={fmtPct}
-              />
-              <ChartCard
-                title="Rede RX / TX"
-                series1={getSeries(charts.net_rx, node)}
-                series2={getSeries(charts.net_tx, node)}
-                color1="#a78bfa"
-                color2="#f472b6"
-                fmt1={fmtBytes}
-                fmt2={fmtBytes}
-                label2="TX"
-              />
-              <ChartCard
-                title="Disco Leit. / Escrit."
-                series1={getSeries(charts.disk_read, node)}
-                series2={getSeries(charts.disk_write, node)}
-                color1="#fb923c"
-                color2="#facc15"
-                fmt1={fmtBytes}
-                fmt2={fmtBytes}
-                label2="W"
-              />
-            </div>
-          </div>
-        ))}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        <Chart
+          title="CPU %"
+          seriesList={getSeriesList(charts.cpu)}
+          nodeNames={nodes}
+          colors={NODE_COLORS}
+          fmt={fmtPct}
+          maxY={100}
+        />
+        <Chart
+          title="Memória %"
+          seriesList={getSeriesList(charts.memory)}
+          nodeNames={nodes}
+          colors={NODE_COLORS}
+          fmt={fmtPct}
+          maxY={100}
+        />
+        <Chart
+          title="Rede — RX (entrada)"
+          seriesList={combinedNetSeries()}
+          nodeNames={nodes}
+          colors={NODE_COLORS}
+          fmt={fmtBytes}
+        />
+        <Chart
+          title="Disco — Leitura"
+          seriesList={combinedDiskSeries()}
+          nodeNames={nodes}
+          colors={NODE_COLORS}
+          fmt={fmtBytes}
+        />
+        <Chart
+          title="Rede — TX (saída)"
+          seriesList={nodes.map(n =>
+            charts.net_tx.find(s => s.node === n || s.node.startsWith(n.split(".")[0])) ?? null
+          )}
+          nodeNames={nodes}
+          colors={NODE_COLORS}
+          fmt={fmtBytes}
+        />
+        <Chart
+          title="Disco — Escrita"
+          seriesList={combinedDiskWriteSeries()}
+          nodeNames={nodes}
+          colors={NODE_COLORS}
+          fmt={fmtBytes}
+        />
       </div>
     </div>
   );
