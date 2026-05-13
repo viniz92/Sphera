@@ -276,8 +276,8 @@ function UpgradePath({ cluster }) {
 const TAB_KEYS = [
   { id: "addons",  key: "tabAddons" },
   { id: "nos",     key: "tabNodes" },
-  { id: "monitor", key: "tabMonitor" },
   { id: "pods",    key: "tabPods" },
+  { id: "monitor", key: "tabMonitor" },
   { id: "eventos", key: "tabEvents" },
   { id: "costs",   key: "tabCosts" },
 ];

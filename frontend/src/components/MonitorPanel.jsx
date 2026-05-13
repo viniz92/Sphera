@@ -88,6 +88,7 @@ export function MonitorPanel() {
   const [nsFilter, setNsFilter] = useState("");
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("desc");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     fetchPodMetrics()
@@ -112,6 +113,11 @@ export function MonitorPanel() {
   let visible = pods;
   if (hideSystem) visible = visible.filter(p => !SYSTEM_NS.has(p.namespace));
   if (nsFilter)   visible = visible.filter(p => p.namespace === nsFilter);
+  if (search)     visible = visible.filter(p =>
+    p.name.toLowerCase().includes(search.toLowerCase()) ||
+    p.namespace.toLowerCase().includes(search.toLowerCase()) ||
+    (p.node_name ?? "").toLowerCase().includes(search.toLowerCase())
+  );
 
   // Default sort: problematic first. User sort overrides.
   if (sortKey) {
@@ -134,6 +140,11 @@ export function MonitorPanel() {
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+        <input
+          type="text" value={search} onChange={e => setSearch(e.target.value)}
+          placeholder="Buscar pod, namespace ou nó..."
+          style={{ fontSize: 11, padding: "4px 10px", background: "var(--color-background-secondary)", border: "0.5px solid var(--color-border-secondary)", color: "var(--color-text-primary)", borderRadius: "var(--border-radius-md)", outline: "none", minWidth: 220 }}
+        />
         <select value={nsFilter} onChange={e => setNsFilter(e.target.value)}
           style={{ fontSize: 11, padding: "3px 8px", background: "var(--color-background-secondary)", border: "0.5px solid var(--color-border-secondary)", color: "var(--color-text-secondary)", borderRadius: "var(--border-radius-md)", cursor: "pointer" }}>
           <option value="">{t("allNamespaces")}</option>
@@ -176,8 +187,8 @@ export function MonitorPanel() {
                 const isProblematic = !OK_STATUSES.has(p.status);
                 return (
                   <tr key={i} style={{ borderBottom: "0.5px solid var(--color-border-tertiary)", background: isProblematic ? "rgba(248,113,113,0.03)" : "none" }}>
-                    <td style={{ padding: "5px 8px", fontSize: 11, color: "var(--color-text-tertiary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.namespace}</td>
-                    <td style={{ padding: "5px 8px", fontSize: 12, fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--color-text-primary)" }} title={p.name}>{p.name}</td>
+                    <td style={{ padding: "5px 6px", fontSize: 11, color: "var(--color-text-tertiary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.namespace}</td>
+                    <td style={{ padding: "5px 6px", fontSize: 12, fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--color-text-primary)" }} title={p.name}>{p.name}</td>
                     <td style={{ padding: "5px 8px" }}>
                       <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 10, fontWeight: 600, background: ss.bg, color: ss.color, whiteSpace: "nowrap" }}>{p.status}</span>
                     </td>
