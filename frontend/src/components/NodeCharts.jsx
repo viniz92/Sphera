@@ -35,7 +35,7 @@ function MultiLineChart({ seriesList, colors, fmt, height = 110, maxY }) {
 
   // Find global max for consistent Y scale
   const allVals = seriesList.flatMap(s => (s?.points ?? []).map(p => p.v));
-  const globalMax = maxY ?? (allVals.length > 0 ? Math.max(...allVals) : 1) || 1;
+  const globalMax = maxY ?? ((allVals.length > 0 ? Math.max(...allVals) : 1) || 1);
 
   function toPath(points) {
     if (!points || points.length < 2) return null;
