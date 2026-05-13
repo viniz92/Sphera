@@ -37,7 +37,7 @@ function AnimatedLogo() {
       <img
         src={spheraLogo}
         alt="Sphēra"
-        style={{ width: 260, display: "block", borderRadius: 12 }}
+        style={{ width: 260, display: "block", mixBlendMode: "screen" }}
       />
     </div>
   );
