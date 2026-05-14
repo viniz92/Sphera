@@ -27,10 +27,17 @@ export function AddonTable({ addons, cluster }) {
       .catch(() => {});
   }, []);
 
-  // Inject metrics into addons by namespace
+  // Compute totals for percentage calculation
+  const totalCpu = Object.values(addonMetrics).reduce((s, m) => s + (m.cpu_millicores || 0), 0);
+  const totalMem = Object.values(addonMetrics).reduce((s, m) => s + (m.memory_mib || 0), 0);
+
+  // Inject metrics and percentages into addons by namespace
   const enriched = addons.map(a => {
     const m = addonMetrics[a.namespace];
-    return m ? { ...a, cpu_millicores: m.cpu_millicores, memory_mib: m.memory_mib } : a;
+    if (!m) return a;
+    const cpu_percent = totalCpu > 0 ? (m.cpu_millicores / totalCpu) * 100 : null;
+    const memory_percent = totalMem > 0 ? (m.memory_mib / totalMem) * 100 : null;
+    return { ...a, cpu_millicores: m.cpu_millicores, memory_mib: m.memory_mib, cpu_percent, memory_percent };
   });
 
   const needsAction = enriched.filter((a) => a.compat_next !== "ok");

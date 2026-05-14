@@ -291,6 +291,7 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
   const [activeTab, setActiveTab] = useState("addons");
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showVersions, setShowVersions] = useState(false);
+  const [tabKey, setTabKey] = useState(0);
 
   const healthStats = useMemo(() => {
     if (!addons || addons.length === 0) return null;
@@ -305,6 +306,11 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
     window.addEventListener("sphera:nav-versions", handler);
     return () => window.removeEventListener("sphera:nav-versions", handler);
   }, []);
+
+  function changeTab(id) {
+    setActiveTab(id);
+    setTabKey(k => k + 1);
+  }
   const days = cluster.eol_days_remaining;
   const eolBadgeColor = days < 60 ? "var(--color-text-danger)" : days < 180 ? "var(--color-text-warning)" : "var(--color-text-success)";
   const eolBadgeBg   = days < 60 ? "var(--color-background-danger)" : days < 180 ? "var(--color-background-warning)" : "var(--color-background-success)";
@@ -377,7 +383,7 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
 
       <div style={{ display: "flex", borderBottom: "1px solid var(--color-border-tertiary)", marginBottom: "1rem" }}>
         {TAB_KEYS.map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
+          <button key={tab.id} onClick={() => changeTab(tab.id)} style={{
             padding: "7px 18px", fontSize: 12, fontWeight: activeTab === tab.id ? 600 : 400,
             color: activeTab === tab.id ? "var(--color-text-info)" : "var(--color-text-secondary)",
             background: "none", border: "none", cursor: "pointer",
@@ -389,31 +395,33 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
         ))}
       </div>
 
-      {activeTab === "addons" && (addonsLoading
-        ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 4 }}>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0" }}>
-                <div className="skeleton-box" style={{ width: 140, height: 13 }} />
-                <div className="skeleton-box" style={{ width: 60, height: 13 }} />
-                <div className="skeleton-box" style={{ width: 80, height: 13, marginLeft: "auto" }} />
-                <div className="skeleton-box" style={{ width: 100, height: 13 }} />
-              </div>
-            ))}
-          </div>
-        )
-        : <AddonTable addons={addons} cluster={cluster} />
-      )}
-      {activeTab === "nos" && (
-        <>
-          <NodeGroupsSection nodeGroups={cluster.node_groups} />
-          <NodeCharts />
-        </>
-      )}
-      {activeTab === "pods"    && <MonitorPanel key={lang} />}
-      {activeTab === "costs"    && <CostsPanel key={lang} />}
-      {activeTab === "helm"     && <HelmReleasesPanel />}
-      {activeTab === "catalog"  && <CatalogPanel addons={addons} />}
+      <div key={tabKey} style={{ animation: "tab-fade-in 0.18s ease forwards" }}>
+        {activeTab === "addons" && (addonsLoading
+          ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 4 }}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0" }}>
+                  <div className="skeleton-box" style={{ width: 140, height: 13 }} />
+                  <div className="skeleton-box" style={{ width: 60, height: 13 }} />
+                  <div className="skeleton-box" style={{ width: 80, height: 13, marginLeft: "auto" }} />
+                  <div className="skeleton-box" style={{ width: 100, height: 13 }} />
+                </div>
+              ))}
+            </div>
+          )
+          : <AddonTable addons={addons} cluster={cluster} />
+        )}
+        {activeTab === "nos" && (
+          <>
+            <NodeGroupsSection nodeGroups={cluster.node_groups} />
+            <NodeCharts />
+          </>
+        )}
+        {activeTab === "pods"    && <MonitorPanel key={lang} />}
+        {activeTab === "costs"    && <CostsPanel key={lang} />}
+        {activeTab === "helm"     && <HelmReleasesPanel />}
+        {activeTab === "catalog"  && <CatalogPanel addons={addons} />}
+      </div>
     </div>
   );
 }

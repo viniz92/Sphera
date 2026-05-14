@@ -107,15 +107,25 @@ export function AddonDetail({ addon }) {
       </div>
 
       {/* Resource usage */}
-      {(addon.cpu_millicores != null || addon.memory_mib != null) && (
-        <div style={{ gridColumn: "1/-1", display: "flex", gap: 16, marginTop: 4 }}>
-          {addon.cpu_millicores != null && (
-            <span style={{ fontSize: 11, color: "var(--color-text-info)" }}>CPU {addon.cpu_millicores}m</span>
+      {(addon.cpu_percent != null || addon.memory_percent != null) && (
+        <div style={{ gridColumn: "1/-1", display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
+          {addon.cpu_percent != null && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", minWidth: 28 }}>CPU</span>
+              <div style={{ flex: 1, height: 5, background: "var(--color-border-secondary)", borderRadius: 3, overflow: "hidden" }}>
+                <div style={{ height: "100%", borderRadius: 3, width: `${Math.min(100, addon.cpu_percent)}%`, background: addon.cpu_percent > 80 ? "var(--color-text-danger)" : addon.cpu_percent > 60 ? "var(--color-text-warning)" : "var(--color-text-info)" }} />
+              </div>
+              <span style={{ fontSize: 11, color: "var(--color-text-secondary)", minWidth: 36, textAlign: "right" }}>{addon.cpu_percent.toFixed(1)}%</span>
+            </div>
           )}
-          {addon.memory_mib != null && (
-            <span style={{ fontSize: 11, color: "var(--color-text-success)" }}>
-              Mem {addon.memory_mib >= 1024 ? `${(addon.memory_mib / 1024).toFixed(1)} GiB` : `${addon.memory_mib} MiB`}
-            </span>
+          {addon.memory_percent != null && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", minWidth: 28 }}>Mem</span>
+              <div style={{ flex: 1, height: 5, background: "var(--color-border-secondary)", borderRadius: 3, overflow: "hidden" }}>
+                <div style={{ height: "100%", borderRadius: 3, width: `${Math.min(100, addon.memory_percent)}%`, background: addon.memory_percent > 80 ? "var(--color-text-danger)" : addon.memory_percent > 60 ? "var(--color-text-warning)" : "var(--color-text-success)" }} />
+              </div>
+              <span style={{ fontSize: 11, color: "var(--color-text-secondary)", minWidth: 36, textAlign: "right" }}>{addon.memory_percent.toFixed(1)}%</span>
+            </div>
           )}
         </div>
       )}

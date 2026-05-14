@@ -37,104 +37,145 @@ function fmtTs(ts) {
 
 function Chart({ title, seriesList, nodeNames, colors, fmt, maxY, hoverIdx, onHover }) {
   const svgRef = useRef(null);
-  const W = 100, H = 90, px = 1, py = 6;
-  const IW = W - px * 2, IH = H - py * 2;
+
+  // Layout: leave left padding for Y-axis labels
+  const W = 100, H = 88;
+  const pxL = 8, pxR = 1, py = 4, pbottom = 4;
+  const IW = W - pxL - pxR;
+  const IH = H - py - pbottom;
 
   const allVals = seriesList.flatMap(s => (s?.points ?? []).map(p => p.v));
   const globalMax = maxY ?? ((allVals.length > 0 ? Math.max(...allVals) : 1) || 1);
   const totalPts = Math.max(...seriesList.map(s => s?.points?.length ?? 0), 1);
 
-  function xOf(i)   { return px + (i / (totalPts - 1)) * IW; }
+  const chartId = title.replace(/\W/g, "");
+
+  function xOf(i)   { return pxL + (totalPts > 1 ? (i / (totalPts - 1)) * IW : 0); }
   function yOf(v)   { return py + IH - ((v / globalMax) * IH); }
 
-  function toPolyline(pts) {
+  function toLinePath(pts) {
     if (!pts || pts.length < 2) return null;
-    return pts.map((p, i) => `${xOf(i).toFixed(2)},${yOf(p.v).toFixed(2)}`).join(" ");
+    return pts.map((p, i) => `${i === 0 ? "M" : "L"}${xOf(i).toFixed(2)},${yOf(p.v).toFixed(2)}`).join(" ");
   }
-  function toArea(pts) {
+  function toAreaPath(pts) {
     if (!pts || pts.length < 2) return null;
+    const base = (py + IH).toFixed(2);
     const line = pts.map((p, i) => `L${xOf(i).toFixed(2)},${yOf(p.v).toFixed(2)}`).join(" ");
-    return `M${px},${(py + IH).toFixed(2)} ${line} L${(px + IW).toFixed(2)},${(py + IH).toFixed(2)} Z`;
+    const firstX = xOf(0).toFixed(2);
+    const lastX  = xOf(pts.length - 1).toFixed(2);
+    return `M${firstX},${base} ${line} L${lastX},${base} Z`;
   }
+
+  // Y-axis grid labels: 0%, 25%, 50%, 75%, 100% (or raw values)
+  const gridFracs = [0.25, 0.5, 0.75, 1.0];
 
   function handleMouseMove(e) {
     const rect = svgRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const relX = (e.clientX - rect.left) / rect.width;
-    const idx = Math.round(relX * (totalPts - 1));
-    onHover(Math.max(0, Math.min(totalPts - 1, idx)));
+    const relX = (e.clientX - rect.left - (rect.width * pxL / W)) / (rect.width * IW / W);
+    const idx = Math.round(Math.max(0, Math.min(1, relX)) * (totalPts - 1));
+    onHover(idx);
   }
 
   const hoverX = hoverIdx != null ? xOf(hoverIdx) : null;
 
   return (
-    <div style={{ background: "var(--color-background-secondary)", borderRadius: "var(--border-radius-md)", padding: "10px 12px", flex: 1, minWidth: 240 }}>
-      <div style={{ fontSize: 11, fontWeight: 600, color: "var(--color-text-secondary)", marginBottom: 6 }}>{title}</div>
+    <div style={{
+      background: "var(--color-background-secondary)",
+      borderRadius: "var(--border-radius-md)",
+      padding: "10px 12px",
+      flex: 1,
+      minWidth: 240,
+    }}>
+      {/* Title */}
+      <div style={{ fontSize: 12, fontWeight: 600, color: "var(--color-text-secondary)", marginBottom: 6 }}>{title}</div>
 
-      <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: 90, display: "block", cursor: "crosshair" }}
-        onMouseMove={handleMouseMove} onMouseLeave={() => onHover(null)}>
-        <defs>
-          {seriesList.map((_, i) => (
-            <linearGradient key={i} id={`g-${title.replace(/\W/g,"")}-${i}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={colors[i % colors.length]} stopOpacity="0.2" />
-              <stop offset="100%" stopColor={colors[i % colors.length]} stopOpacity="0" />
-            </linearGradient>
-          ))}
-        </defs>
-
-        {/* grid */}
-        {[0.25, 0.5, 0.75, 1].map(f => (
-          <line key={f} x1={px} y1={py + IH * (1-f)} x2={px+IW} y2={py + IH * (1-f)}
-            stroke="rgba(255,255,255,0.05)" strokeWidth="0.3"/>
-        ))}
-
-        {/* areas */}
-        {seriesList.map((s, i) => {
-          const area = toArea(s?.points);
-          return area ? <path key={i} d={area} fill={`url(#g-${title.replace(/\W/g,"")}-${i})`}/> : null;
-        })}
-
-        {/* lines */}
-        {seriesList.map((s, i) => {
-          const pts = toPolyline(s?.points);
-          return pts ? (
-            <polyline key={i} points={pts} fill="none" stroke={colors[i % colors.length]}
-              strokeWidth="1.2" strokeLinejoin="round" strokeLinecap="round"/>
-          ) : null;
-        })}
-
-        {/* crosshair */}
-        {hoverX != null && (
-          <>
-            <line x1={hoverX} y1={py} x2={hoverX} y2={py + IH}
-              stroke="rgba(255,255,255,0.3)" strokeWidth="0.4" strokeDasharray="1 1"/>
-            {seriesList.map((s, i) => {
-              const p = s?.points?.[hoverIdx];
-              if (!p) return null;
-              return <circle key={i} cx={hoverX.toFixed(2)} cy={yOf(p.v).toFixed(2)}
-                r="1.8" fill={colors[i % colors.length]} stroke="rgba(0,0,0,0.5)" strokeWidth="0.4"/>;
-            })}
-          </>
-        )}
-
-        {/* invisible hit area */}
-        <rect x={px} y={py} width={IW} height={IH} fill="transparent"/>
-      </svg>
-
-      {/* legend */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "3px 12px", marginTop: 6 }}>
+      {/* Legend inline at top */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 10px", marginBottom: 6 }}>
         {nodeNames.map((name, i) => {
           const pts = seriesList[i]?.points;
           const val = hoverIdx != null ? pts?.[hoverIdx]?.v : pts?.[pts.length - 1]?.v;
           return (
             <div key={name} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <span style={{ width: 10, height: 2.5, borderRadius: 2, background: colors[i % colors.length], display: "inline-block" }}/>
-              <span style={{ fontSize: 10, color: "var(--color-text-tertiary)" }}>{shortHost(name)}</span>
+              <span style={{ width: 10, height: 2.5, borderRadius: 2, background: colors[i % colors.length], display: "inline-block", flexShrink: 0 }}/>
+              <span style={{ fontSize: 10, color: "var(--color-text-secondary)" }}>{shortHost(name)}</span>
               <span style={{ fontSize: 10, fontWeight: 700, color: colors[i % colors.length] }}>{fmt(val ?? null)}</span>
             </div>
           );
         })}
       </div>
+
+      <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`}
+        style={{ width: "100%", height: 90, display: "block", cursor: "crosshair", overflow: "visible" }}
+        onMouseMove={handleMouseMove} onMouseLeave={() => onHover(null)}>
+
+        <defs>
+          {seriesList.map((_, i) => (
+            <linearGradient key={i} id={`grad-${chartId}-${i}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stopColor={colors[i % colors.length]} stopOpacity="0.25" />
+              <stop offset="100%" stopColor={colors[i % colors.length]} stopOpacity="0" />
+            </linearGradient>
+          ))}
+        </defs>
+
+        {/* Horizontal grid lines with Y-axis labels */}
+        {gridFracs.map(f => {
+          const gy = (py + IH * (1 - f)).toFixed(2);
+          const labelVal = globalMax * f;
+          const labelStr = maxY != null
+            ? `${Math.round(labelVal)}%`
+            : fmtBytes(labelVal).replace("/s", "");
+          return (
+            <g key={f}>
+              <line x1={pxL} y1={gy} x2={pxL + IW} y2={gy}
+                stroke="rgba(255,255,255,0.07)" strokeWidth="0.4"/>
+              <text x={pxL - 1} y={Number(gy) + 1} textAnchor="end"
+                fontSize="3.5" fill="rgba(255,255,255,0.2)" fontFamily="monospace">
+                {labelStr}
+              </text>
+            </g>
+          );
+        })}
+
+        {/* Area fills */}
+        {seriesList.map((s, i) => {
+          const area = toAreaPath(s?.points);
+          return area ? (
+            <path key={i} d={area} fill={`url(#grad-${chartId}-${i})`} />
+          ) : null;
+        })}
+
+        {/* Lines */}
+        {seriesList.map((s, i) => {
+          const line = toLinePath(s?.points);
+          return line ? (
+            <path key={i} d={line} fill="none"
+              stroke={colors[i % colors.length]}
+              strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"/>
+          ) : null;
+        })}
+
+        {/* Crosshair */}
+        {hoverX != null && (
+          <>
+            <line x1={hoverX.toFixed(2)} y1={py} x2={hoverX.toFixed(2)} y2={py + IH}
+              stroke="rgba(255,255,255,0.3)" strokeWidth="0.5" strokeDasharray="4 2"/>
+            {seriesList.map((s, i) => {
+              const p = s?.points?.[hoverIdx];
+              if (!p) return null;
+              return (
+                <circle key={i}
+                  cx={hoverX.toFixed(2)} cy={yOf(p.v).toFixed(2)}
+                  r="1.8" fill={colors[i % colors.length]}
+                  stroke="rgba(0,0,0,0.5)" strokeWidth="0.4"/>
+              );
+            })}
+          </>
+        )}
+
+        {/* Invisible hit area */}
+        <rect x={pxL} y={py} width={IW} height={IH} fill="transparent"/>
+      </svg>
     </div>
   );
 }

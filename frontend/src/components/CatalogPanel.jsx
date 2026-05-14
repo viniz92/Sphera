@@ -1,24 +1,63 @@
 import { useState } from "react";
 import { useLanguage } from "../context/LanguageContext";
 
-function CopyInstallBtn({ cmd }) {
+function InstallSection({ cmd }) {
+  const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  function handleCopy() {
+
+  function handleCopy(e) {
+    e.stopPropagation();
     navigator.clipboard.writeText(cmd).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
   }
+
   return (
-    <button onClick={handleCopy} style={{
-      fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 6,
-      background: copied ? "rgba(74,222,128,0.15)" : "rgba(74,127,212,0.12)",
-      color: copied ? "var(--color-text-success)" : "var(--color-text-info)",
-      border: `0.5px solid ${copied ? "rgba(74,222,128,0.3)" : "rgba(74,127,212,0.25)"}`,
-      cursor: "pointer", transition: "all 0.2s",
-    }}>
-      {copied ? "✓ Copiado" : "Copiar helm install"}
-    </button>
+    <div style={{ marginTop: 8 }}>
+      <button onClick={() => setOpen(v => !v)} style={{
+        fontSize: 10, fontWeight: 600, padding: "3px 9px", borderRadius: 6,
+        background: open ? "rgba(74,127,212,0.18)" : "rgba(74,127,212,0.1)",
+        color: "var(--color-text-info)",
+        border: "0.5px solid rgba(74,127,212,0.25)", cursor: "pointer",
+        display: "flex", alignItems: "center", gap: 5,
+      }}>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points={open ? "18 15 12 9 6 15" : "6 9 12 15 18 9"} />
+        </svg>
+        helm install
+      </button>
+      {open && (
+        <div style={{
+          marginTop: 6, padding: "8px 10px", borderRadius: "var(--border-radius-md)",
+          background: "var(--color-background-secondary)",
+          border: "0.5px solid var(--color-border-secondary)",
+          display: "flex", alignItems: "flex-start", gap: 8,
+        }}>
+          <code style={{
+            fontSize: 10, color: "var(--color-text-secondary)", fontFamily: "monospace",
+            flex: 1, lineHeight: 1.6, whiteSpace: "pre-wrap", wordBreak: "break-all",
+          }}>
+            {cmd}
+          </code>
+          <button onClick={handleCopy} title="Copiar" style={{
+            background: "none", border: "none", cursor: "pointer", padding: "2px",
+            color: copied ? "var(--color-text-success)" : "var(--color-text-tertiary)",
+            flexShrink: 0,
+          }}>
+            {copied ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+            )}
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -696,9 +735,7 @@ export function CatalogPanel({ addons = [] }) {
                 </div>
               </div>
               {addon.installCmd && (
-                <div style={{ marginTop: 8 }}>
-                  <CopyInstallBtn cmd={addon.installCmd} />
-                </div>
+                <InstallSection cmd={addon.installCmd} />
               )}
             </div>
           );
