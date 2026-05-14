@@ -1,6 +1,27 @@
 import { useState } from "react";
 import { useLanguage } from "../context/LanguageContext";
 
+function CopyInstallBtn({ cmd }) {
+  const [copied, setCopied] = useState(false);
+  function handleCopy() {
+    navigator.clipboard.writeText(cmd).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+  return (
+    <button onClick={handleCopy} style={{
+      fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 6,
+      background: copied ? "rgba(74,222,128,0.15)" : "rgba(74,127,212,0.12)",
+      color: copied ? "var(--color-text-success)" : "var(--color-text-info)",
+      border: `0.5px solid ${copied ? "rgba(74,222,128,0.3)" : "rgba(74,127,212,0.25)"}`,
+      cursor: "pointer", transition: "all 0.2s",
+    }}>
+      {copied ? "✓ Copiado" : "Copiar helm install"}
+    </button>
+  );
+}
+
 const CATALOG = [
   // Rede
   {
@@ -12,6 +33,7 @@ const CATALOG = [
     docUrl: "https://docs.cilium.io",
     githubUrl: "https://github.com/cilium/cilium",
     tags: ["cni", "ebpf", "networking", "security", "observability"],
+    installCmd: "helm repo add cilium https://helm.cilium.io/ && helm install cilium cilium/cilium -n kube-system --create-namespace",
   },
   {
     id: "calico",
@@ -22,6 +44,7 @@ const CATALOG = [
     docUrl: "https://docs.tigera.io/calico/latest",
     githubUrl: "https://github.com/projectcalico/calico",
     tags: ["cni", "bgp", "networking", "network-policy"],
+    installCmd: "kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml",
   },
   {
     id: "flannel",
@@ -32,6 +55,7 @@ const CATALOG = [
     docUrl: "https://github.com/flannel-io/flannel#readme",
     githubUrl: "https://github.com/flannel-io/flannel",
     tags: ["cni", "vxlan", "overlay", "networking"],
+    installCmd: null,
   },
 
   // Ingress
@@ -44,6 +68,7 @@ const CATALOG = [
     docUrl: "https://doc.traefik.io/traefik",
     githubUrl: "https://github.com/traefik/traefik",
     tags: ["ingress", "reverse-proxy", "load-balancer", "tls", "lets-encrypt"],
+    installCmd: "helm repo add traefik https://traefik.github.io/charts && helm install traefik traefik/traefik -n traefik --create-namespace",
   },
   {
     id: "contour",
@@ -54,6 +79,7 @@ const CATALOG = [
     docUrl: "https://projectcontour.io/docs",
     githubUrl: "https://github.com/projectcontour/contour",
     tags: ["ingress", "envoy", "httpproxy", "tls"],
+    installCmd: "helm repo add bitnami https://charts.bitnami.com/bitnami && helm install contour bitnami/contour -n projectcontour --create-namespace",
   },
   {
     id: "haproxy-ingress",
@@ -64,6 +90,7 @@ const CATALOG = [
     docUrl: "https://haproxy-ingress.github.io/docs",
     githubUrl: "https://github.com/jcmoraisjr/haproxy-ingress",
     tags: ["ingress", "haproxy", "load-balancer", "high-availability"],
+    installCmd: null,
   },
 
   // Service Mesh
@@ -76,6 +103,7 @@ const CATALOG = [
     docUrl: "https://istio.io/latest/docs",
     githubUrl: "https://github.com/istio/istio",
     tags: ["service-mesh", "mtls", "traffic-management", "observability", "envoy"],
+    installCmd: "helm repo add istio https://istio-release.storage.googleapis.com/charts && helm install istio-base istio/base -n istio-system --create-namespace",
   },
   {
     id: "linkerd",
@@ -86,6 +114,7 @@ const CATALOG = [
     docUrl: "https://linkerd.io/2.x/overview",
     githubUrl: "https://github.com/linkerd/linkerd2",
     tags: ["service-mesh", "mtls", "lightweight", "observability"],
+    installCmd: "helm repo add linkerd https://helm.linkerd.io/stable && helm install linkerd-crds linkerd/linkerd-crds -n linkerd --create-namespace",
   },
 
   // Observabilidade
@@ -98,6 +127,7 @@ const CATALOG = [
     docUrl: "https://opentelemetry.io/docs/collector",
     githubUrl: "https://github.com/open-telemetry/opentelemetry-collector",
     tags: ["observability", "tracing", "metrics", "logs", "otel"],
+    installCmd: null,
   },
   {
     id: "loki",
@@ -108,6 +138,7 @@ const CATALOG = [
     docUrl: "https://grafana.com/docs/loki/latest",
     githubUrl: "https://github.com/grafana/loki",
     tags: ["logging", "observability", "grafana", "promtail"],
+    installCmd: "helm repo add grafana https://grafana.github.io/helm-charts && helm install loki grafana/loki-stack -n monitoring --create-namespace",
   },
   {
     id: "tempo",
@@ -118,6 +149,7 @@ const CATALOG = [
     docUrl: "https://grafana.com/docs/tempo/latest",
     githubUrl: "https://github.com/grafana/tempo",
     tags: ["tracing", "observability", "grafana", "jaeger", "zipkin"],
+    installCmd: null,
   },
   {
     id: "victoriametrics",
@@ -128,6 +160,7 @@ const CATALOG = [
     docUrl: "https://docs.victoriametrics.com",
     githubUrl: "https://github.com/VictoriaMetrics/VictoriaMetrics",
     tags: ["metrics", "prometheus", "tsdb", "observability"],
+    installCmd: null,
   },
   {
     id: "pixie",
@@ -138,6 +171,7 @@ const CATALOG = [
     docUrl: "https://docs.px.dev",
     githubUrl: "https://github.com/pixie-io/pixie",
     tags: ["observability", "ebpf", "auto-instrumentation", "tracing"],
+    installCmd: null,
   },
 
   // Segurança
@@ -150,6 +184,7 @@ const CATALOG = [
     docUrl: "https://falco.org/docs",
     githubUrl: "https://github.com/falcosecurity/falco",
     tags: ["security", "runtime", "ebpf", "threat-detection", "syscall"],
+    installCmd: "helm repo add falcosecurity https://falcosecurity.github.io/charts && helm install falco falcosecurity/falco -n falco --create-namespace",
   },
   {
     id: "kyverno",
@@ -160,6 +195,7 @@ const CATALOG = [
     docUrl: "https://kyverno.io/docs",
     githubUrl: "https://github.com/kyverno/kyverno",
     tags: ["policy", "security", "admission-control", "governance"],
+    installCmd: "helm repo add kyverno https://kyverno.github.io/kyverno/ && helm install kyverno kyverno/kyverno -n kyverno --create-namespace",
   },
   {
     id: "opa-gatekeeper",
@@ -170,6 +206,7 @@ const CATALOG = [
     docUrl: "https://open-policy-agent.github.io/gatekeeper/website/docs",
     githubUrl: "https://github.com/open-policy-agent/gatekeeper",
     tags: ["policy", "opa", "rego", "admission-control", "security"],
+    installCmd: null,
   },
   {
     id: "trivy-operator",
@@ -180,6 +217,7 @@ const CATALOG = [
     docUrl: "https://aquasecurity.github.io/trivy-operator/latest",
     githubUrl: "https://github.com/aquasecurity/trivy-operator",
     tags: ["security", "vulnerability-scanning", "cve", "images", "sbom"],
+    installCmd: null,
   },
   {
     id: "tetragon",
@@ -190,6 +228,7 @@ const CATALOG = [
     docUrl: "https://tetragon.io/docs",
     githubUrl: "https://github.com/cilium/tetragon",
     tags: ["security", "ebpf", "runtime", "enforcement", "cilium"],
+    installCmd: null,
   },
 
   // Storage
@@ -202,6 +241,7 @@ const CATALOG = [
     docUrl: "https://longhorn.io/docs",
     githubUrl: "https://github.com/longhorn/longhorn",
     tags: ["storage", "block", "distributed", "snapshots", "backup"],
+    installCmd: "helm repo add longhorn https://charts.longhorn.io && helm install longhorn longhorn/longhorn -n longhorn-system --create-namespace",
   },
   {
     id: "rook-ceph",
@@ -212,6 +252,7 @@ const CATALOG = [
     docUrl: "https://rook.io/docs/rook/latest-release",
     githubUrl: "https://github.com/rook/rook",
     tags: ["storage", "ceph", "object-storage", "block", "distributed"],
+    installCmd: null,
   },
   {
     id: "openebs",
@@ -222,6 +263,7 @@ const CATALOG = [
     docUrl: "https://openebs.io/docs",
     githubUrl: "https://github.com/openebs/openebs",
     tags: ["storage", "cas", "local-pv", "mayastor", "persistent-volume"],
+    installCmd: null,
   },
 
   // GitOps / CD
@@ -234,6 +276,7 @@ const CATALOG = [
     docUrl: "https://fluxcd.io/flux",
     githubUrl: "https://github.com/fluxcd/flux2",
     tags: ["gitops", "cd", "helm", "kustomize", "continuous-delivery"],
+    installCmd: "helm repo add fluxcd-community https://fluxcd-community.github.io/helm-charts && helm install fluxcd fluxcd-community/flux2 -n flux-system --create-namespace",
   },
   {
     id: "tekton",
@@ -244,6 +287,7 @@ const CATALOG = [
     docUrl: "https://tekton.dev/docs",
     githubUrl: "https://github.com/tektoncd/pipeline",
     tags: ["ci", "cd", "pipeline", "gitops", "build"],
+    installCmd: null,
   },
 
   // Escalabilidade
@@ -256,6 +300,7 @@ const CATALOG = [
     docUrl: "https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#readme",
     githubUrl: "https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler",
     tags: ["autoscaling", "vpa", "resources", "optimization"],
+    installCmd: null,
   },
   {
     id: "kubecost",
@@ -266,6 +311,7 @@ const CATALOG = [
     docUrl: "https://docs.kubecost.com/",
     githubUrl: "https://github.com/kubecost/cost-analyzer-helm-chart",
     tags: ["cost", "monitoring", "optimization", "aws", "gcp", "azure", "finops"],
+    installCmd: "helm repo add kubecost https://kubecost.github.io/cost-analyzer/ && helm install kubecost kubecost/cost-analyzer -n kubecost --create-namespace",
   },
   {
     id: "opencost",
@@ -276,6 +322,7 @@ const CATALOG = [
     docUrl: "https://www.opencost.io/docs",
     githubUrl: "https://github.com/opencost/opencost",
     tags: ["cost", "finops", "monitoring", "allocation"],
+    installCmd: "helm repo add opencost https://opencost.github.io/opencost-helm-chart && helm install opencost opencost/opencost -n opencost --create-namespace",
   },
 
   // Secrets
@@ -288,6 +335,7 @@ const CATALOG = [
     docUrl: "https://external-secrets.io/latest",
     githubUrl: "https://github.com/external-secrets/external-secrets",
     tags: ["secrets", "aws", "vault", "security", "sync"],
+    installCmd: "helm repo add external-secrets https://charts.external-secrets.io && helm install external-secrets external-secrets/external-secrets -n external-secrets --create-namespace",
   },
   {
     id: "vault",
@@ -298,6 +346,7 @@ const CATALOG = [
     docUrl: "https://developer.hashicorp.com/vault/docs",
     githubUrl: "https://github.com/hashicorp/vault",
     tags: ["secrets", "pki", "encryption", "dynamic-secrets", "audit"],
+    installCmd: "helm repo add hashicorp https://helm.releases.hashicorp.com && helm install vault hashicorp/vault -n vault --create-namespace",
   },
 
   // Outros
@@ -310,6 +359,7 @@ const CATALOG = [
     docUrl: "https://docs.crossplane.io",
     githubUrl: "https://github.com/crossplane/crossplane",
     tags: ["infrastructure", "iac", "aws", "gcp", "azure", "platform"],
+    installCmd: "helm repo add crossplane-stable https://charts.crossplane.io/stable && helm install crossplane crossplane-stable/crossplane -n crossplane-system --create-namespace",
   },
   {
     id: "strimzi",
@@ -320,6 +370,7 @@ const CATALOG = [
     docUrl: "https://strimzi.io/documentation",
     githubUrl: "https://github.com/strimzi/strimzi-kafka-operator",
     tags: ["kafka", "messaging", "streaming", "operator", "event-driven"],
+    installCmd: null,
   },
   {
     id: "keda",
@@ -330,6 +381,7 @@ const CATALOG = [
     docUrl: "https://keda.sh/docs/",
     githubUrl: "https://github.com/kedacore/keda",
     tags: ["autoscaling", "event-driven", "sqs", "kafka", "hpa", "scaling"],
+    installCmd: "helm repo add kedacore https://kedacore.github.io/charts && helm install keda kedacore/keda -n keda --create-namespace",
   },
   {
     id: "karpenter",
@@ -340,6 +392,7 @@ const CATALOG = [
     docUrl: "https://karpenter.sh/docs/",
     githubUrl: "https://github.com/aws/karpenter",
     tags: ["autoscaling", "nodes", "ec2", "aws", "cost", "provisioning"],
+    installCmd: "helm repo add karpenter https://charts.karpenter.sh && helm install karpenter karpenter/karpenter -n karpenter --create-namespace",
   },
   {
     id: "argocd",
@@ -350,6 +403,7 @@ const CATALOG = [
     docUrl: "https://argo-cd.readthedocs.io/",
     githubUrl: "https://github.com/argoproj/argo-cd",
     tags: ["gitops", "cd", "deploy", "sync", "git", "argo"],
+    installCmd: "helm repo add argo https://argoproj.github.io/argo-helm && helm install argocd argo/argo-cd -n argocd --create-namespace",
   },
   {
     id: "argo-workflows",
@@ -360,6 +414,7 @@ const CATALOG = [
     docUrl: "https://argoproj.github.io/argo-workflows/",
     githubUrl: "https://github.com/argoproj/argo-workflows",
     tags: ["workflow", "pipeline", "dag", "ci", "cd", "argo"],
+    installCmd: "helm repo add argo https://argoproj.github.io/argo-helm && helm install argo-workflows argo/argo-workflows -n argo --create-namespace",
   },
   {
     id: "cert-manager",
@@ -370,6 +425,7 @@ const CATALOG = [
     docUrl: "https://cert-manager.io/docs/",
     githubUrl: "https://github.com/cert-manager/cert-manager",
     tags: ["tls", "ssl", "certificates", "letsencrypt", "security"],
+    installCmd: "helm repo add jetstack https://charts.jetstack.io && helm install cert-manager jetstack/cert-manager -n cert-manager --create-namespace --set installCRDs=true",
   },
   {
     id: "prometheus",
@@ -380,6 +436,7 @@ const CATALOG = [
     docUrl: "https://prometheus.io/docs/",
     githubUrl: "https://github.com/prometheus/prometheus",
     tags: ["monitoring", "metrics", "alerting", "time-series", "promql"],
+    installCmd: "helm repo add prometheus-community https://prometheus-community.github.io/helm-charts && helm install prometheus prometheus-community/prometheus -n monitoring --create-namespace",
   },
   {
     id: "grafana",
@@ -390,6 +447,7 @@ const CATALOG = [
     docUrl: "https://grafana.com/docs/",
     githubUrl: "https://github.com/grafana/grafana",
     tags: ["dashboards", "visualization", "metrics", "alerting", "observability"],
+    installCmd: "helm repo add grafana https://grafana.github.io/helm-charts && helm install grafana grafana/grafana -n monitoring --create-namespace",
   },
   {
     id: "jaeger",
@@ -400,6 +458,7 @@ const CATALOG = [
     docUrl: "https://www.jaegertracing.io/docs/",
     githubUrl: "https://github.com/jaegertracing/jaeger",
     tags: ["tracing", "distributed-tracing", "observability", "microservices"],
+    installCmd: "helm repo add jaegertracing https://jaegertracing.github.io/helm-charts && helm install jaeger jaegertracing/jaeger -n observability --create-namespace",
   },
   {
     id: "metrics-server",
@@ -410,6 +469,7 @@ const CATALOG = [
     docUrl: "https://github.com/kubernetes-sigs/metrics-server",
     githubUrl: "https://github.com/kubernetes-sigs/metrics-server",
     tags: ["metrics", "hpa", "kubectl-top", "cpu", "memory", "monitoring"],
+    installCmd: "helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/ && helm install metrics-server metrics-server/metrics-server -n kube-system",
   },
   {
     id: "aws-load-balancer-controller",
@@ -420,6 +480,7 @@ const CATALOG = [
     docUrl: "https://kubernetes-sigs.github.io/aws-load-balancer-controller/",
     githubUrl: "https://github.com/kubernetes-sigs/aws-load-balancer-controller",
     tags: ["alb", "nlb", "aws", "ingress", "load-balancer", "eks"],
+    installCmd: "helm repo add eks https://aws.github.io/eks-charts && helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system",
   },
   {
     id: "ingress-nginx",
@@ -430,6 +491,7 @@ const CATALOG = [
     docUrl: "https://kubernetes.github.io/ingress-nginx/",
     githubUrl: "https://github.com/kubernetes/ingress-nginx",
     tags: ["nginx", "ingress", "http", "https", "routing", "load-balancer"],
+    installCmd: "helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx && helm install ingress-nginx ingress-nginx/ingress-nginx -n ingress-nginx --create-namespace",
   },
   {
     id: "ebs-csi-driver",
@@ -440,6 +502,7 @@ const CATALOG = [
     docUrl: "https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html",
     githubUrl: "https://github.com/kubernetes-sigs/aws-ebs-csi-driver",
     tags: ["ebs", "aws", "storage", "pv", "pvc", "csi", "volumes"],
+    installCmd: null,
   },
   {
     id: "external-dns",
@@ -450,6 +513,7 @@ const CATALOG = [
     docUrl: "https://kubernetes-sigs.github.io/external-dns/",
     githubUrl: "https://github.com/kubernetes-sigs/external-dns",
     tags: ["dns", "route53", "cloudflare", "ingress", "service", "networking"],
+    installCmd: null,
   },
   {
     id: "velero",
@@ -460,6 +524,7 @@ const CATALOG = [
     docUrl: "https://velero.io/docs/",
     githubUrl: "https://github.com/vmware-tanzu/velero",
     tags: ["backup", "restore", "disaster-recovery", "s3", "migration"],
+    installCmd: "helm repo add vmware-tanzu https://vmware-tanzu.github.io/helm-charts && helm install velero vmware-tanzu/velero -n velero --create-namespace",
   },
   {
     id: "sealed-secrets",
@@ -470,6 +535,7 @@ const CATALOG = [
     docUrl: "https://github.com/bitnami-labs/sealed-secrets",
     githubUrl: "https://github.com/bitnami-labs/sealed-secrets",
     tags: ["secrets", "encryption", "gitops", "security", "git"],
+    installCmd: "helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets && helm install sealed-secrets sealed-secrets/sealed-secrets -n kube-system",
   },
   {
     id: "cluster-autoscaler",
@@ -480,6 +546,7 @@ const CATALOG = [
     docUrl: "https://docs.aws.amazon.com/eks/latest/userguide/autoscaling.html",
     githubUrl: "https://github.com/kubernetes/autoscaler",
     tags: ["autoscaling", "nodes", "ec2", "aws", "eks", "cost"],
+    installCmd: "helm repo add autoscaler https://kubernetes.github.io/autoscaler && helm install cluster-autoscaler autoscaler/cluster-autoscaler -n kube-system",
   },
   {
     id: "reloader",
@@ -490,6 +557,7 @@ const CATALOG = [
     docUrl: "https://github.com/stakater/Reloader",
     githubUrl: "https://github.com/stakater/Reloader",
     tags: ["configmap", "secret", "restart", "rolling-update", "config"],
+    installCmd: "helm repo add stakater https://stakater.github.io/stakater-charts && helm install reloader stakater/reloader -n kube-system",
   },
   {
     id: "descheduler",
@@ -500,6 +568,7 @@ const CATALOG = [
     docUrl: "https://github.com/kubernetes-sigs/descheduler",
     githubUrl: "https://github.com/kubernetes-sigs/descheduler",
     tags: ["scheduling", "rebalancing", "nodes", "optimization", "affinity"],
+    installCmd: null,
   },
 ];
 
@@ -618,24 +687,19 @@ export function CatalogPanel({ addons = [] }) {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 2 }}>
                 <span style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>{addon.maintainer}</span>
                 <div style={{ display: "flex", gap: 8 }}>
-                  <a
-                    href={addon.docUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ fontSize: 11, color: "var(--color-text-info)", textDecoration: "none" }}
-                  >
+                  <a href={addon.docUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: "var(--color-text-info)", textDecoration: "none" }}>
                     {t("docs")}
                   </a>
-                  <a
-                    href={addon.githubUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ fontSize: 11, color: "var(--color-text-info)", textDecoration: "none" }}
-                  >
+                  <a href={addon.githubUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: "var(--color-text-info)", textDecoration: "none" }}>
                     GitHub
                   </a>
                 </div>
               </div>
+              {addon.installCmd && (
+                <div style={{ marginTop: 8 }}>
+                  <CopyInstallBtn cmd={addon.installCmd} />
+                </div>
+              )}
             </div>
           );
         })}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { EolBar } from "./EolBar";
 import { AddonTable } from "./AddonTable";
 import { MonitorPanel } from "./MonitorPanel";
@@ -6,7 +6,7 @@ import { CostsPanel } from "./CostsPanel";
 import { CatalogPanel } from "./CatalogPanel";
 import { EksVersionsPanel } from "./EksVersionsPanel";
 import { NodeCharts } from "./NodeCharts";
-import { MonitorDashboard } from "./MonitorDashboard";
+import { HelmReleasesPanel } from "./HelmReleasesPanel";
 import { useLanguage } from "../context/LanguageContext";
 import { fetchNodeMetrics } from "../api/client";
 
@@ -281,8 +281,8 @@ const TAB_KEYS = [
   { id: "addons",   key: "tabAddons" },
   { id: "nos",      key: "tabNodes" },
   { id: "pods",     key: "tabPods" },
-  { id: "monitor",  key: "tabMonitor" },
   { id: "costs",    key: "tabCosts" },
+  { id: "helm",     key: "tabHelm" },
   { id: "catalog",  key: "tabCatalog" },
 ];
 
@@ -291,6 +291,14 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
   const [activeTab, setActiveTab] = useState("addons");
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showVersions, setShowVersions] = useState(false);
+
+  const healthStats = useMemo(() => {
+    if (!addons || addons.length === 0) return null;
+    const critical = addons.filter(a => !a.healthy || a.compat_current === "incompat").length;
+    const warning = addons.filter(a => a.healthy !== false && a.compat_current !== "incompat" && (a.compat_current === "upd" || a.action_type === "warn")).length;
+    const ok = addons.length - critical - warning;
+    return { critical, warning, ok, total: addons.length };
+  }, [addons]);
 
   useEffect(() => {
     function handler() { setShowVersions(true); }
@@ -341,6 +349,28 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
         <MetaCard label={t("nodes")} value={cluster.node_count} sub={`${cluster.node_groups?.length ?? 0} node groups`} />
       </div>
 
+      {healthStats && !addonsLoading && (
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: "1rem", padding: "8px 12px", background: "var(--color-background-secondary)", borderRadius: "var(--border-radius-md)" }}>
+          <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", fontWeight: 500 }}>ADDONS</span>
+          {healthStats.critical > 0 && (
+            <span style={{ fontSize: 12, color: "var(--color-text-danger)", display: "flex", alignItems: "center", gap: 4 }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--color-text-danger)", display: "inline-block" }} />
+              {healthStats.critical} {healthStats.critical === 1 ? "crítico" : "críticos"}
+            </span>
+          )}
+          {healthStats.warning > 0 && (
+            <span style={{ fontSize: 12, color: "var(--color-text-warning)", display: "flex", alignItems: "center", gap: 4 }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--color-text-warning)", display: "inline-block" }} />
+              {healthStats.warning} atenção
+            </span>
+          )}
+          <span style={{ fontSize: 12, color: "var(--color-text-success)", display: "flex", alignItems: "center", gap: 4 }}>
+            <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--color-text-success)", display: "inline-block" }} />
+            {healthStats.ok} ok
+          </span>
+          <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", marginLeft: "auto" }}>{healthStats.total} total</span>
+        </div>
+      )}
       <EolBar cluster={cluster} />
       {showUpgrade && <UpgradePath cluster={cluster} />}
       {showVersions && <EksVersionsPanel currentVersion={cluster.version} key={lang} />}
@@ -380,9 +410,9 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
           <NodeCharts />
         </>
       )}
-      {activeTab === "monitor" && <MonitorDashboard key={lang} />}
       {activeTab === "pods"    && <MonitorPanel key={lang} />}
       {activeTab === "costs"    && <CostsPanel key={lang} />}
+      {activeTab === "helm"     && <HelmReleasesPanel />}
       {activeTab === "catalog"  && <CatalogPanel addons={addons} />}
     </div>
   );

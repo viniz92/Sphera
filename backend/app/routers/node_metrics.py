@@ -141,3 +141,33 @@ def pod_metrics():
     except Exception:
         pass
     return result
+
+
+@router.get("/addons")
+def addon_metrics():
+    """Agrega CPU e memória por namespace de addon."""
+    try:
+        custom = k8s_client.CustomObjectsApi(get_k8s_client())
+        result = custom.list_cluster_custom_object(
+            group="metrics.k8s.io",
+            version="v1beta1",
+            plural="pods",
+        )
+    except Exception:
+        return []
+
+    # Agrega por namespace
+    ns_totals: dict[str, dict] = {}
+    for item in result.get("items", []):
+        ns = item["metadata"]["namespace"]
+        for c in item.get("containers", []):
+            cpu_str = c.get("usage", {}).get("cpu", "0")
+            mem_str = c.get("usage", {}).get("memory", "0")
+            cpu_m = _parse_cpu(cpu_str)
+            mem_mi = _parse_memory_mib(mem_str)
+            if ns not in ns_totals:
+                ns_totals[ns] = {"cpu_millicores": 0, "memory_mib": 0}
+            ns_totals[ns]["cpu_millicores"] += cpu_m
+            ns_totals[ns]["memory_mib"] += mem_mi
+
+    return [{"namespace": ns, **vals} for ns, vals in ns_totals.items()]

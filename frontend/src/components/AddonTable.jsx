@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { AddonRow } from "./AddonRow";
 import { useLanguage } from "../context/LanguageContext";
 
@@ -12,7 +13,27 @@ const thStyle = {
 
 export function AddonTable({ addons, cluster }) {
   const { t } = useLanguage();
-  const needsAction = addons.filter((a) => a.compat_next !== "ok");
+  const [addonMetrics, setAddonMetrics] = useState({});
+
+  useEffect(() => {
+    const token = localStorage.getItem("sphera_token") || "";
+    fetch("/api/metrics/addons", { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(data => {
+        const map = {};
+        (Array.isArray(data) ? data : []).forEach(m => { map[m.namespace] = m; });
+        setAddonMetrics(map);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Inject metrics into addons by namespace
+  const enriched = addons.map(a => {
+    const m = addonMetrics[a.namespace];
+    return m ? { ...a, cpu_millicores: m.cpu_millicores, memory_mib: m.memory_mib } : a;
+  });
+
+  const needsAction = enriched.filter((a) => a.compat_next !== "ok");
 
   return (
     <div>
@@ -32,7 +53,7 @@ export function AddonTable({ addons, cluster }) {
           </tr>
         </thead>
         <tbody>
-          {addons.map((addon) => (
+          {enriched.map((addon) => (
             <AddonRow key={addon.name} addon={addon} />
           ))}
         </tbody>
