@@ -120,9 +120,25 @@ export default function App() {
     return (
       <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", background: theme === "dark" ? BG_DARK : BG_LIGHT }}>
         {theme === "dark" && <Stars />}
-        <div style={{ position: "relative", zIndex: 1 }}>
-          <div className="orb-anim" style={{ overflow: "hidden", width: 220, height: 150 }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20, position: "relative", zIndex: 1 }}>
+          {/* Logo — clipped to sphere only (68% of rendered height) */}
+          <div className="orb-anim" style={{ overflow: "hidden", width: 220, height: 128 }}>
             <img src={spheraLogo} alt="Sphēra" style={{ width: 220, display: "block" }} />
+          </div>
+
+          {/* Skeleton rows */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, width: 220 }}>
+            <div className="skeleton-box" style={{ height: 11, width: "100%", borderRadius: 6 }} />
+            <div className="skeleton-box" style={{ height: 11, width: "75%", borderRadius: 6 }} />
+            <div className="skeleton-box" style={{ height: 11, width: "55%", borderRadius: 6 }} />
+          </div>
+
+          {/* Carregando com pontinhos */}
+          <div style={{ fontSize: 12, color: "var(--color-text-tertiary)", letterSpacing: "0.04em" }}>
+            {t("connecting").replace("...", "")}
+            {[0, 0.2, 0.4].map((delay, i) => (
+              <span key={i} style={{ animation: `dot-pulse 1.4s ease-in-out ${delay}s infinite`, display: "inline-block" }}>.</span>
+            ))}
           </div>
         </div>
       </div>

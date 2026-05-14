@@ -77,6 +77,10 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 .orb-anim        { animation: orb-breathe 5s ease-in-out infinite; }
+@keyframes dot-pulse {
+  0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+  40%           { opacity: 1;   transform: scale(1); }
+}
 .eyes-anim       { animation: eyes-pulse 3.2s ease-in-out infinite; }
 .form-anim       { animation: form-in .5s ease forwards; }
 .spin-anim       { animation: spin-slow 1s linear infinite; }
