@@ -38,8 +38,8 @@ function fmtTs(ts) {
 function Chart({ title, seriesList, nodeNames, colors, fmt, maxY, hoverIdx, onHover, animDelay = 0 }) {
   const svgRef = useRef(null);
 
-  const W = 100, H = 130;
-  const pxL = 12, pxR = 2, py = 6, pbottom = 6;
+  const W = 100, H = 200;
+  const pxL = 14, pxR = 2, py = 8, pbottom = 8;
   const IW = W - pxL - pxR;
   const IH = H - py - pbottom;
 
@@ -104,7 +104,7 @@ function Chart({ title, seriesList, nodeNames, colors, fmt, maxY, hoverIdx, onHo
       </div>
 
       <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`}
-        style={{ width: "100%", height: 150, display: "block", cursor: "crosshair", overflow: "visible" }}
+        style={{ width: "100%", height: 240, display: "block", cursor: "crosshair", overflow: "visible" }}
         onMouseMove={handleMouseMove} onMouseLeave={() => onHover(null)}>
 
         <defs>
