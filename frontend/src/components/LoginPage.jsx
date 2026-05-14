@@ -32,12 +32,19 @@ function Stars() {
 }
 
 function AnimatedLogo() {
+  // PNG is 680×580. Sphere ends at ~y=395 (68% of height).
+  // At width=380: rendered height = 380*(580/680)=324px. Clip at 68% = 220px.
   return (
-    <div className="orb-anim" style={{ position: "relative", display: "inline-block" }}>
+    <div className="orb-anim" style={{
+      overflow: "hidden",
+      width: 380,
+      height: 220,
+      display: "block",
+    }}>
       <img
         src={spheraLogo}
         alt="Sphēra"
-        style={{ width: 320, display: "block" }}
+        style={{ width: 380, display: "block" }}
       />
     </div>
   );

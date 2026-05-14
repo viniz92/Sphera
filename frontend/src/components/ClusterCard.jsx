@@ -290,6 +290,7 @@ const TAB_KEYS = [
 export function ClusterCard({ cluster, addons, addonsLoading }) {
   const { t, lang } = useLanguage();
   const [activeTab, setActiveTab] = useState("addons");
+  const [showUpgrade, setShowUpgrade] = useState(true);
 
   useEffect(() => {
     function handler() { setActiveTab("versions"); }
@@ -311,6 +312,14 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 11, padding: "3px 10px", borderRadius: 20, fontWeight: 500, background: eolBadgeBg, color: eolBadgeColor }}>{eolLabel}</span>
+          <button onClick={() => setShowUpgrade(v => !v)} style={{
+            fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20,
+            background: showUpgrade ? "rgba(74,212,127,0.15)" : "var(--color-background-secondary)",
+            color: showUpgrade ? "var(--color-text-success)" : "var(--color-text-secondary)",
+            border: "0.5px solid var(--color-border-secondary)", cursor: "pointer",
+          }}>
+            {t("simulateUpgrade")}
+          </button>
           <button onClick={() => setActiveTab("versions")} style={{
             fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20,
             background: activeTab === "versions" ? "rgba(74,127,212,0.18)" : "var(--color-background-secondary)",
@@ -327,9 +336,10 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
         <MetaCard label={t("nextVersion")} value={cluster.next_version} sub="Disponível"
           action={
             <button onClick={() => setActiveTab("versions")} style={{
-              fontSize: 10, fontWeight: 600, padding: "1px 7px", borderRadius: 8,
+              fontSize: 10, fontWeight: 600, padding: "2px 9px", borderRadius: 8,
               background: "rgba(74,127,212,0.15)", color: "var(--color-text-info)",
               border: "0.5px solid rgba(74,127,212,0.3)", cursor: "pointer",
+              marginLeft: 4,
             }}>
               details
             </button>
@@ -343,7 +353,7 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
       </div>
 
       <EolBar cluster={cluster} />
-      <UpgradePath cluster={cluster} />
+      {showUpgrade && <UpgradePath cluster={cluster} />}
 
       <div style={{ display: "flex", borderBottom: "1px solid var(--color-border-tertiary)", marginBottom: "1rem" }}>
         {TAB_KEYS.map(tab => (
