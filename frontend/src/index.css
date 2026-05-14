@@ -56,8 +56,12 @@ button { font-family: inherit; cursor: pointer; }
 
 /* ── Login animations ─────────────────────────────────────────────────────── */
 @keyframes orb-breathe {
-  0%, 100% { transform: scale(1);   filter: drop-shadow(0 0 18px rgba(100,120,255,.3)); }
-  50%       { transform: scale(1.04); filter: drop-shadow(0 0 36px rgba(120,100,255,.6)); }
+  0%   { transform: scale(1);    filter: drop-shadow(0 0 16px rgba(80,110,255,.28)); }
+  20%  { transform: scale(1.03); filter: drop-shadow(0 0 30px rgba(140,70,255,.52)); }
+  40%  { transform: scale(1.05); filter: drop-shadow(0 0 38px rgba(60,180,255,.55)); }
+  60%  { transform: scale(1.03); filter: drop-shadow(0 0 32px rgba(50,210,190,.42)); }
+  80%  { transform: scale(1.02); filter: drop-shadow(0 0 24px rgba(110,80,245,.4)); }
+  100% { transform: scale(1);    filter: drop-shadow(0 0 16px rgba(80,110,255,.28)); }
 }
 @keyframes eyes-pulse {
   0%, 100% { opacity: 1; }
@@ -72,7 +76,7 @@ button { font-family: inherit; cursor: pointer; }
   to   { transform: rotate(360deg); }
 }
 
-.orb-anim        { animation: orb-breathe 3.2s ease-in-out infinite; }
+.orb-anim        { animation: orb-breathe 5s ease-in-out infinite; }
 .eyes-anim       { animation: eyes-pulse 3.2s ease-in-out infinite; }
 .form-anim       { animation: form-in .5s ease forwards; }
 .spin-anim       { animation: spin-slow 1s linear infinite; }
