@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useLanguage } from "../context/LanguageContext";
-import spheraLogo from "../assets/sphera.jpeg";
+import spheraLogo from "../assets/sphera.png";
 
 function Stars() {
   const stars = useMemo(() => Array.from({ length: 120 }, (_, i) => ({
@@ -37,7 +37,7 @@ function AnimatedLogo() {
       <img
         src={spheraLogo}
         alt="Sphēra"
-        style={{ width: 260, display: "block", mixBlendMode: "screen" }}
+        style={{ width: 260, display: "block" }}
       />
     </div>
   );

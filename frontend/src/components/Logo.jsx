@@ -1,4 +1,4 @@
-import spheraLogo from "../assets/sphera.jpeg";
+import spheraLogo from "../assets/sphera.png";
 
 export function Logo({ size = 40, showName = false, className = "" }) {
   return (
@@ -8,7 +8,6 @@ export function Logo({ size = 40, showName = false, className = "" }) {
         backgroundImage: `url(${spheraLogo})`,
         backgroundSize: "200% auto",
         backgroundPosition: "50% 12%",
-        mixBlendMode: "screen",
         borderRadius: "50%",
         flexShrink: 0,
       }} />
