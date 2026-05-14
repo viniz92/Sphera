@@ -98,7 +98,13 @@ export function LoginPage({ onLogin }) {
       <div className="form-anim" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 28, width: 320 }}>
 
         {/* Logo animado */}
-        <AnimatedLogo />
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+          <AnimatedLogo />
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 17, fontWeight: 600, letterSpacing: "0.22em", color: "#e0e0f0" }}>SPHĒRA</div>
+            <div style={{ fontSize: 10, letterSpacing: "0.2em", color: "#4A7FD4", marginTop: 3 }}>EKS CLUSTER VISIBILITY</div>
+          </div>
+        </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} style={{ width: "100%", display: "flex", flexDirection: "column", gap: 12 }}>
