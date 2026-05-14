@@ -290,9 +290,10 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
   const { t, lang } = useLanguage();
   const [activeTab, setActiveTab] = useState("addons");
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [showVersions, setShowVersions] = useState(false);
 
   useEffect(() => {
-    function handler() { setShowUpgrade(true); }
+    function handler() { setShowVersions(true); }
     window.addEventListener("sphera:nav-versions", handler);
     return () => window.removeEventListener("sphera:nav-versions", handler);
   }, []);
@@ -319,6 +320,14 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
           }}>
             {t("simulateUpgrade")}
           </button>
+          <button onClick={() => setShowVersions(v => !v)} style={{
+            fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20,
+            background: showVersions ? "rgba(74,127,212,0.18)" : "var(--color-background-secondary)",
+            color: "var(--color-text-info)", border: "0.5px solid var(--color-border-secondary)",
+            cursor: "pointer",
+          }}>
+            {t("eksVersionsBtn")} →
+          </button>
         </div>
       </div>
 
@@ -326,7 +335,7 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
         <MetaCard label={t("currentVersion")} value={cluster.version} sub="Kubernetes" />
         <MetaCard label={t("nextVersion")} value={cluster.next_version} sub="Disponível"
           action={
-            <button onClick={() => setShowUpgrade(true)} style={{
+            <button onClick={() => setShowVersions(true)} style={{
               fontSize: 10, fontWeight: 600, padding: "2px 9px", borderRadius: 8,
               background: "rgba(74,127,212,0.15)", color: "var(--color-text-info)",
               border: "0.5px solid rgba(74,127,212,0.3)", cursor: "pointer",
@@ -344,12 +353,8 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
       </div>
 
       <EolBar cluster={cluster} />
-      {showUpgrade && (
-        <>
-          <UpgradePath cluster={cluster} />
-          <EksVersionsPanel currentVersion={cluster.version} key={lang} />
-        </>
-      )}
+      {showUpgrade && <UpgradePath cluster={cluster} />}
+      {showVersions && <EksVersionsPanel currentVersion={cluster.version} key={lang} />}
 
       <div style={{ display: "flex", borderBottom: "1px solid var(--color-border-tertiary)", marginBottom: "1rem" }}>
         {TAB_KEYS.map(tab => (
