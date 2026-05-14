@@ -389,13 +389,14 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
             background: "none", border: "none", cursor: "pointer",
             borderBottom: activeTab === tab.id ? "2px solid var(--color-text-info)" : "2px solid transparent",
             marginBottom: -1,
+            transition: "color 0.2s ease, border-color 0.2s ease, font-weight 0.15s ease",
           }}>
             {t(tab.key)}
           </button>
         ))}
       </div>
 
-      <div key={tabKey} style={{ animation: "tab-fade-in 0.18s ease forwards" }}>
+      <div key={tabKey} style={{ animation: "tab-fade-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards" }}>
         {activeTab === "addons" && (addonsLoading
           ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 4 }}>
