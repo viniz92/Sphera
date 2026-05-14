@@ -386,16 +386,17 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
           const isActive = activeTab === tab.id;
           return (
             <button
-              key={isActive ? `${tab.id}-${tabKey}` : tab.id}
+              key={tab.id}
               onClick={() => changeTab(tab.id)}
               style={{
-                padding: "8px 20px", fontSize: 13, fontWeight: isActive ? 600 : 400,
+                padding: "8px 20px", fontSize: 14, fontWeight: isActive ? 600 : 400,
                 color: isActive ? "var(--color-text-info)" : "var(--color-text-secondary)",
                 background: "none", border: "none", cursor: "pointer",
                 borderBottom: isActive ? "2px solid var(--color-text-info)" : "2px solid transparent",
                 marginBottom: -1,
-                transition: "color 0.22s ease, border-color 0.22s ease",
-                animation: isActive ? "tab-press 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) forwards" : "none",
+                transform: isActive ? "scale(1.07) translateY(-2px)" : "scale(0.95) translateY(0px)",
+                opacity: isActive ? 1 : 0.65,
+                transition: "transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease, opacity 0.2s ease, border-color 0.2s ease",
                 transformOrigin: "center bottom",
                 display: "inline-block",
               }}
