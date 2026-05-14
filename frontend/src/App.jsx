@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import spheraLogo from "./assets/sphera.png";
 import { useCluster } from "./hooks/useCluster";
 import { useAddons } from "./hooks/useAddons";
 import { ClusterCard } from "./components/ClusterCard";
@@ -39,6 +40,29 @@ function FlagIcon({ code }) {
     </svg>
   );
   return null;
+}
+
+const BG = "radial-gradient(ellipse at 50% 40%, #0a0520 0%, #060610 60%, #03030a 100%)";
+
+function Stars() {
+  const stars = useMemo(() => Array.from({ length: 100 }, (_, i) => ({
+    id: i, x: Math.random() * 100, y: Math.random() * 100,
+    size: Math.random() * 1.8 + 0.4, opacity: Math.random() * 0.45 + 0.06,
+    duration: Math.random() * 4 + 2, delay: Math.random() * 5,
+  })), []);
+  return (
+    <div style={{ position: "fixed", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
+      {stars.map(s => (
+        <div key={s.id} style={{
+          position: "absolute", left: `${s.x}%`, top: `${s.y}%`,
+          width: s.size, height: s.size, borderRadius: "50%",
+          background: s.size > 1.8 ? "#a0b8ff" : "#ffffff",
+          "--star-opacity": s.opacity, opacity: s.opacity,
+          animation: `twinkle ${s.duration}s ease-in-out ${s.delay}s infinite`,
+        }} />
+      ))}
+    </div>
+  );
 }
 
 function useTheme() {
@@ -91,8 +115,17 @@ export default function App() {
 
   if (loading) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "60vh", color: "var(--color-text-secondary)" }}>
-        {t("connecting")}
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", background: BG }}>
+        <Stars />
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 24, position: "relative", zIndex: 1 }}>
+          <div className="orb-anim" style={{ overflow: "hidden", width: 180, height: 122 }}>
+            <img src={spheraLogo} alt="Sphēra" style={{ width: 180, display: "block" }} />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--color-text-secondary)", fontSize: 13 }}>
+            <span className="spin-anim" style={{ display: "inline-block", fontSize: 15 }}>◌</span>
+            {t("connecting")}
+          </div>
+        </div>
       </div>
     );
   }
@@ -112,7 +145,9 @@ export default function App() {
   const timeLocale = lang === "pt" ? "pt-BR" : "en-US";
 
   return (
-    <div style={{ padding: "0 2rem" }}>
+    <div style={{ minHeight: "100vh", position: "relative", background: BG }}>
+      <Stars />
+    <div style={{ padding: "0 2rem", position: "relative", zIndex: 1 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.5rem 0 1rem" }}>
         <Logo size={42} showName />
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -198,6 +233,7 @@ export default function App() {
             </div>
           )}
       <ClusterCard cluster={cluster} addons={addons} addonsLoading={addonsLoading} />
+    </div>
     </div>
   );
 }
