@@ -3,7 +3,7 @@ import { fetchNodeCharts } from "../api/client";
 
 // ─── constants ───────────────────────────────────────────────────────────────
 
-const NODE_COLORS = ["#60a5fa", "#4ade80", "#f472b6", "#fb923c", "#a78bfa", "#facc15"];
+const NODE_COLORS = ["#60a5fa", "#34d399", "#fb923c", "#a78bfa", "#facc15", "#f87171"];
 
 const TIME_RANGES = [
   { label: "1m",  hours: 1 / 60,  step: 1,    refresh: 5  },
@@ -96,8 +96,8 @@ function Chart({ title, seriesList, nodeNames, colors, fmt, maxY, hoverIdx, onHo
           {nodeNames.map((name, i) => (
             <div key={name} style={{ display: "flex", alignItems: "center", gap: 4 }}>
               <span style={{ width: 6, height: 6, borderRadius: "50%", background: colors[i % colors.length], display: "inline-block", flexShrink: 0 }}/>
-              <span style={{ fontSize: 10, color: "var(--color-text-tertiary)" }}>{shortHost(name)}</span>
-              <span style={{ fontSize: 11, fontWeight: 700, color: colors[i % colors.length], fontFamily: "monospace" }}>{fmt(lastVals[i] ?? null)}</span>
+              <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>{shortHost(name)}</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: colors[i % colors.length], fontFamily: "monospace" }}>{fmt(lastVals[i] ?? null)}</span>
             </div>
           ))}
         </div>
@@ -125,9 +125,9 @@ function Chart({ title, seriesList, nodeNames, colors, fmt, maxY, hoverIdx, onHo
           return (
             <g key={f}>
               <line x1={pxL} y1={gy} x2={pxL + IW} y2={gy}
-                stroke="rgba(255,255,255,0.06)" strokeWidth="0.5"/>
-              <text x={pxL - 2} y={Number(gy) + 1.5} textAnchor="end"
-                fontSize="5" fill="rgba(255,255,255,0.28)" fontFamily="monospace">
+                stroke="rgba(255,255,255,0.1)" strokeWidth="0.6" strokeDasharray="3 2"/>
+              <text x={pxL - 2} y={Number(gy) + 2} textAnchor="end"
+                fontSize="7" fill="rgba(255,255,255,0.45)" fontFamily="monospace">
                 {labelStr}
               </text>
             </g>
@@ -136,7 +136,7 @@ function Chart({ title, seriesList, nodeNames, colors, fmt, maxY, hoverIdx, onHo
 
         {/* Baseline */}
         <line x1={pxL} y1={py + IH} x2={pxL + IW} y2={py + IH}
-          stroke="rgba(255,255,255,0.1)" strokeWidth="0.5"/>
+          stroke="rgba(255,255,255,0.18)" strokeWidth="0.7"/>
 
         {/* Area fills — fade in after line draws */}
         {seriesList.map((s, i) => {
@@ -153,7 +153,7 @@ function Chart({ title, seriesList, nodeNames, colors, fmt, maxY, hoverIdx, onHo
           return line ? (
             <path key={i} d={line} fill="none"
               stroke={colors[i % colors.length]}
-              strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round"
+              strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round"
               pathLength="1"
               style={{ strokeDasharray: 1, strokeDashoffset: 1,
                 animation: `chart-draw 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards`,
@@ -339,7 +339,7 @@ export function NodeCharts() {
       </div>
 
       {/* Charts grid 2x3 */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
         <Chart title="CPU %" seriesList={getList(charts.cpu)} nodeNames={nodes}
           colors={NODE_COLORS} fmt={fmtPct} maxY={100} hoverIdx={hoverIdx} onHover={setHoverIdx} animDelay={0}/>
         <Chart title="Memória %" seriesList={getList(charts.memory)} nodeNames={nodes}
