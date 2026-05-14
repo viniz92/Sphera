@@ -17,6 +17,11 @@ export const translations = {
     tabPods: "Pods",
     tabMonitor: "Monitor",
     tabCosts: "Custos",
+    tabCatalog: "Catálogo",
+    catalogSearch: "Buscar addon...",
+    catalogAll: "Todos",
+    catalogInstalled: "Instalado",
+    catalogEmpty: "Nenhum addon encontrado.",
     tabVersions: "Versões EKS",
 
     // ClusterCard meta
@@ -134,6 +139,11 @@ export const translations = {
     tabPods: "Pods",
     tabMonitor: "Monitor",
     tabCosts: "Costs",
+    tabCatalog: "Catalog",
+    catalogSearch: "Search addon...",
+    catalogAll: "All",
+    catalogInstalled: "Installed",
+    catalogEmpty: "No addons found.",
     tabVersions: "EKS Versions",
 
     // ClusterCard meta
@@ -248,6 +258,11 @@ export const translations = {
     tabPods: "Pods",
     tabMonitor: "Monitor",
     tabCosts: "Costos",
+    tabCatalog: "Catálogo",
+    catalogSearch: "Buscar addon...",
+    catalogAll: "Todos",
+    catalogInstalled: "Instalado",
+    catalogEmpty: "Ningún addon encontrado.",
     tabVersions: "Versiones EKS",
     currentVersion: "Versión actual",
     nextVersion: "Próxima versión",

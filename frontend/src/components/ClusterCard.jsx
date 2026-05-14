@@ -4,6 +4,7 @@ import { AddonTable } from "./AddonTable";
 import { EventsPanel } from "./EventsPanel";
 import { MonitorPanel } from "./MonitorPanel";
 import { CostsPanel } from "./CostsPanel";
+import { CatalogPanel } from "./CatalogPanel";
 import { EksVersionsPanel } from "./EksVersionsPanel";
 import { NodeCharts } from "./NodeCharts";
 import { MonitorDashboard } from "./MonitorDashboard";
@@ -284,6 +285,7 @@ const TAB_KEYS = [
   { id: "monitor",  key: "tabMonitor" },
   { id: "eventos",  key: "tabEvents" },
   { id: "costs",    key: "tabCosts" },
+  { id: "catalog",  key: "tabCatalog" },
 ];
 
 export function ClusterCard({ cluster, addons, addonsLoading }) {
@@ -395,6 +397,7 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
       {activeTab === "pods"    && <MonitorPanel key={lang} />}
       {activeTab === "eventos" && <EventsPanel key={lang} />}
       {activeTab === "costs"    && <CostsPanel key={lang} />}
+      {activeTab === "catalog"  && <CatalogPanel addons={addons} />}
     </div>
   );
 }
