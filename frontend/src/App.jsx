@@ -120,13 +120,9 @@ export default function App() {
     return (
       <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", background: theme === "dark" ? BG_DARK : BG_LIGHT }}>
         {theme === "dark" && <Stars />}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 24, position: "relative", zIndex: 1 }}>
-          <div className="orb-anim" style={{ overflow: "hidden", width: 180, height: 122 }}>
-            <img src={spheraLogo} alt="Sphēra" style={{ width: 180, display: "block" }} />
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--color-text-secondary)", fontSize: 13 }}>
-            <span className="spin-anim" style={{ display: "inline-block", fontSize: 15 }}>◌</span>
-            {t("connecting")}
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <div className="orb-anim" style={{ overflow: "hidden", width: 220, height: 150 }}>
+            <img src={spheraLogo} alt="Sphēra" style={{ width: 220, display: "block" }} />
           </div>
         </div>
       </div>
