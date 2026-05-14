@@ -325,8 +325,8 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
           <button onClick={() => setShowVersions(v => !v)} style={{
             fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20,
             background: showVersions ? "rgba(74,127,212,0.18)" : "var(--color-background-secondary)",
-            color: "var(--color-text-info)", border: "0.5px solid var(--color-border-secondary)",
-            cursor: "pointer",
+            color: showVersions ? "var(--color-text-info)" : "var(--color-text-secondary)",
+            border: "0.5px solid var(--color-border-secondary)", cursor: "pointer",
           }}>
             {t("eksVersionsBtn")} →
           </button>
@@ -335,18 +335,7 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10, marginBottom: "1.25rem" }}>
         <MetaCard label={t("currentVersion")} value={cluster.version} sub="Kubernetes" />
-        <MetaCard label={t("nextVersion")} value={cluster.next_version} sub={t("available")}
-          action={
-            <button onClick={() => setShowVersions(true)} style={{
-              fontSize: 10, fontWeight: 600, padding: "2px 9px", borderRadius: 8,
-              background: "rgba(74,127,212,0.15)", color: "var(--color-text-info)",
-              border: "0.5px solid rgba(74,127,212,0.3)", cursor: "pointer",
-              marginLeft: 4,
-            }}>
-              details
-            </button>
-          }
-        />
+        <MetaCard label={t("nextVersion")} value={cluster.next_version} sub={t("available")} />
         <MetaCard label={t("endOfSupport")} value={cluster.eol_date ?? "—"}
           sub={`${t("supportLabel")} · ${days < 60 ? `${days} dias` : `${days} dias · ~${Math.round(days / 30)} meses`}`}
           valueColor={eolBadgeColor} />
