@@ -108,6 +108,14 @@ button { font-family: inherit; cursor: pointer; }
   60%  { opacity: 1; filter: blur(0); }
   100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
 }
+@keyframes chart-draw {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes chart-area-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
 @keyframes tab-press {
   0%   { transform: scale(1) translateY(0); }
   30%  { transform: scale(0.92) translateY(2px); }

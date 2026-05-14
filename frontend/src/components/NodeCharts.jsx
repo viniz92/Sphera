@@ -35,23 +35,21 @@ function fmtTs(ts) {
 
 // ─── single chart ─────────────────────────────────────────────────────────────
 
-function Chart({ title, seriesList, nodeNames, colors, fmt, maxY, hoverIdx, onHover }) {
+function Chart({ title, seriesList, nodeNames, colors, fmt, maxY, hoverIdx, onHover, animDelay = 0 }) {
   const svgRef = useRef(null);
 
-  // Layout: leave left padding for Y-axis labels
-  const W = 100, H = 88;
-  const pxL = 8, pxR = 1, py = 4, pbottom = 4;
+  const W = 100, H = 130;
+  const pxL = 12, pxR = 2, py = 6, pbottom = 6;
   const IW = W - pxL - pxR;
   const IH = H - py - pbottom;
 
   const allVals = seriesList.flatMap(s => (s?.points ?? []).map(p => p.v));
   const globalMax = maxY ?? ((allVals.length > 0 ? Math.max(...allVals) : 1) || 1);
   const totalPts = Math.max(...seriesList.map(s => s?.points?.length ?? 0), 1);
-
   const chartId = title.replace(/\W/g, "");
 
-  function xOf(i)   { return pxL + (totalPts > 1 ? (i / (totalPts - 1)) * IW : 0); }
-  function yOf(v)   { return py + IH - ((v / globalMax) * IH); }
+  function xOf(i) { return pxL + (totalPts > 1 ? (i / (totalPts - 1)) * IW : 0); }
+  function yOf(v) { return py + IH - ((v / globalMax) * IH); }
 
   function toLinePath(pts) {
     if (!pts || pts.length < 2) return null;
@@ -61,12 +59,9 @@ function Chart({ title, seriesList, nodeNames, colors, fmt, maxY, hoverIdx, onHo
     if (!pts || pts.length < 2) return null;
     const base = (py + IH).toFixed(2);
     const line = pts.map((p, i) => `L${xOf(i).toFixed(2)},${yOf(p.v).toFixed(2)}`).join(" ");
-    const firstX = xOf(0).toFixed(2);
-    const lastX  = xOf(pts.length - 1).toFixed(2);
-    return `M${firstX},${base} ${line} L${lastX},${base} Z`;
+    return `M${xOf(0).toFixed(2)},${base} ${line} L${xOf(pts.length - 1).toFixed(2)},${base} Z`;
   }
 
-  // Y-axis grid labels: 0%, 25%, 50%, 75%, 100% (or raw values)
   const gridFracs = [0.25, 0.5, 0.75, 1.0];
 
   function handleMouseMove(e) {
@@ -79,79 +74,90 @@ function Chart({ title, seriesList, nodeNames, colors, fmt, maxY, hoverIdx, onHo
 
   const hoverX = hoverIdx != null ? xOf(hoverIdx) : null;
 
+  // Last-point values for legend
+  const lastVals = seriesList.map(s => {
+    const pts = s?.points;
+    return hoverIdx != null ? pts?.[hoverIdx]?.v : pts?.[pts?.length - 1]?.v;
+  });
+
   return (
     <div style={{
       background: "var(--color-background-secondary)",
-      borderRadius: "var(--border-radius-md)",
-      padding: "10px 12px",
-      flex: 1,
-      minWidth: 240,
+      borderRadius: "var(--border-radius-lg)",
+      padding: "14px 16px",
+      border: "0.5px solid var(--color-border-tertiary)",
+      animation: `tab-fade-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both`,
+      animationDelay: `${animDelay}s`,
     }}>
-      {/* Title */}
-      <div style={{ fontSize: 12, fontWeight: 600, color: "var(--color-text-secondary)", marginBottom: 6 }}>{title}</div>
-
-      {/* Legend inline at top */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 10px", marginBottom: 6 }}>
-        {nodeNames.map((name, i) => {
-          const pts = seriesList[i]?.points;
-          const val = hoverIdx != null ? pts?.[hoverIdx]?.v : pts?.[pts.length - 1]?.v;
-          return (
+      {/* Header: title + current values */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: "var(--color-text-secondary)", letterSpacing: "0.06em", textTransform: "uppercase" }}>{title}</span>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 10px", justifyContent: "flex-end" }}>
+          {nodeNames.map((name, i) => (
             <div key={name} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <span style={{ width: 10, height: 2.5, borderRadius: 2, background: colors[i % colors.length], display: "inline-block", flexShrink: 0 }}/>
-              <span style={{ fontSize: 10, color: "var(--color-text-secondary)" }}>{shortHost(name)}</span>
-              <span style={{ fontSize: 10, fontWeight: 700, color: colors[i % colors.length] }}>{fmt(val ?? null)}</span>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: colors[i % colors.length], display: "inline-block", flexShrink: 0 }}/>
+              <span style={{ fontSize: 10, color: "var(--color-text-tertiary)" }}>{shortHost(name)}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: colors[i % colors.length], fontFamily: "monospace" }}>{fmt(lastVals[i] ?? null)}</span>
             </div>
-          );
-        })}
+          ))}
+        </div>
       </div>
 
       <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`}
-        style={{ width: "100%", height: 90, display: "block", cursor: "crosshair", overflow: "visible" }}
+        style={{ width: "100%", height: 150, display: "block", cursor: "crosshair", overflow: "visible" }}
         onMouseMove={handleMouseMove} onMouseLeave={() => onHover(null)}>
 
         <defs>
           {seriesList.map((_, i) => (
             <linearGradient key={i} id={`grad-${chartId}-${i}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%"   stopColor={colors[i % colors.length]} stopOpacity="0.25" />
+              <stop offset="0%"   stopColor={colors[i % colors.length]} stopOpacity="0.3" />
+              <stop offset="85%"  stopColor={colors[i % colors.length]} stopOpacity="0.04" />
               <stop offset="100%" stopColor={colors[i % colors.length]} stopOpacity="0" />
             </linearGradient>
           ))}
         </defs>
 
-        {/* Horizontal grid lines with Y-axis labels */}
+        {/* Grid lines + Y labels */}
         {gridFracs.map(f => {
           const gy = (py + IH * (1 - f)).toFixed(2);
           const labelVal = globalMax * f;
-          const labelStr = maxY != null
-            ? `${Math.round(labelVal)}%`
-            : fmtBytes(labelVal).replace("/s", "");
+          const labelStr = maxY != null ? `${Math.round(labelVal)}%` : fmtBytes(labelVal).replace("/s", "");
           return (
             <g key={f}>
               <line x1={pxL} y1={gy} x2={pxL + IW} y2={gy}
-                stroke="rgba(255,255,255,0.07)" strokeWidth="0.4"/>
-              <text x={pxL - 1} y={Number(gy) + 1} textAnchor="end"
-                fontSize="3.5" fill="rgba(255,255,255,0.2)" fontFamily="monospace">
+                stroke="rgba(255,255,255,0.06)" strokeWidth="0.5"/>
+              <text x={pxL - 2} y={Number(gy) + 1.5} textAnchor="end"
+                fontSize="5" fill="rgba(255,255,255,0.28)" fontFamily="monospace">
                 {labelStr}
               </text>
             </g>
           );
         })}
 
-        {/* Area fills */}
+        {/* Baseline */}
+        <line x1={pxL} y1={py + IH} x2={pxL + IW} y2={py + IH}
+          stroke="rgba(255,255,255,0.1)" strokeWidth="0.5"/>
+
+        {/* Area fills — fade in after line draws */}
         {seriesList.map((s, i) => {
           const area = toAreaPath(s?.points);
           return area ? (
-            <path key={i} d={area} fill={`url(#grad-${chartId}-${i})`} />
+            <path key={i} d={area} fill={`url(#grad-${chartId}-${i})`}
+              style={{ opacity: 0, animation: `chart-area-in 0.4s ease forwards`, animationDelay: `${animDelay + 0.5 + i * 0.08}s` }}/>
           ) : null;
         })}
 
-        {/* Lines */}
+        {/* Lines — draw animation */}
         {seriesList.map((s, i) => {
           const line = toLinePath(s?.points);
           return line ? (
             <path key={i} d={line} fill="none"
               stroke={colors[i % colors.length]}
-              strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"/>
+              strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round"
+              pathLength="1"
+              style={{ strokeDasharray: 1, strokeDashoffset: 1,
+                animation: `chart-draw 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards`,
+                animationDelay: `${animDelay + 0.1 + i * 0.08}s` }}/>
           ) : null;
         })}
 
@@ -159,21 +165,20 @@ function Chart({ title, seriesList, nodeNames, colors, fmt, maxY, hoverIdx, onHo
         {hoverX != null && (
           <>
             <line x1={hoverX.toFixed(2)} y1={py} x2={hoverX.toFixed(2)} y2={py + IH}
-              stroke="rgba(255,255,255,0.3)" strokeWidth="0.5" strokeDasharray="4 2"/>
+              stroke="rgba(255,255,255,0.25)" strokeWidth="0.6" strokeDasharray="3 2"/>
             {seriesList.map((s, i) => {
               const p = s?.points?.[hoverIdx];
               if (!p) return null;
               return (
-                <circle key={i}
-                  cx={hoverX.toFixed(2)} cy={yOf(p.v).toFixed(2)}
-                  r="1.8" fill={colors[i % colors.length]}
-                  stroke="rgba(0,0,0,0.5)" strokeWidth="0.4"/>
+                <g key={i}>
+                  <circle cx={hoverX.toFixed(2)} cy={yOf(p.v).toFixed(2)}
+                    r="2.2" fill={colors[i % colors.length]} stroke="var(--color-background-primary)" strokeWidth="0.8"/>
+                </g>
               );
             })}
           </>
         )}
 
-        {/* Invisible hit area */}
         <rect x={pxL} y={py} width={IW} height={IH} fill="transparent"/>
       </svg>
     </div>
@@ -334,19 +339,19 @@ export function NodeCharts() {
       </div>
 
       {/* Charts grid 2x3 */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
         <Chart title="CPU %" seriesList={getList(charts.cpu)} nodeNames={nodes}
-          colors={NODE_COLORS} fmt={fmtPct} maxY={100} hoverIdx={hoverIdx} onHover={setHoverIdx}/>
+          colors={NODE_COLORS} fmt={fmtPct} maxY={100} hoverIdx={hoverIdx} onHover={setHoverIdx} animDelay={0}/>
         <Chart title="Memória %" seriesList={getList(charts.memory)} nodeNames={nodes}
-          colors={NODE_COLORS} fmt={fmtPct} maxY={100} hoverIdx={hoverIdx} onHover={setHoverIdx}/>
-        <Chart title="Rede — RX (entrada)" seriesList={getList(charts.net_rx)} nodeNames={nodes}
-          colors={NODE_COLORS} fmt={fmtBytes} hoverIdx={hoverIdx} onHover={setHoverIdx}/>
-        <Chart title="Rede — TX (saída)" seriesList={getList(charts.net_tx)} nodeNames={nodes}
-          colors={NODE_COLORS} fmt={fmtBytes} hoverIdx={hoverIdx} onHover={setHoverIdx}/>
+          colors={NODE_COLORS} fmt={fmtPct} maxY={100} hoverIdx={hoverIdx} onHover={setHoverIdx} animDelay={0.06}/>
+        <Chart title="Rede — RX" seriesList={getList(charts.net_rx)} nodeNames={nodes}
+          colors={NODE_COLORS} fmt={fmtBytes} hoverIdx={hoverIdx} onHover={setHoverIdx} animDelay={0.12}/>
+        <Chart title="Rede — TX" seriesList={getList(charts.net_tx)} nodeNames={nodes}
+          colors={NODE_COLORS} fmt={fmtBytes} hoverIdx={hoverIdx} onHover={setHoverIdx} animDelay={0.18}/>
         <Chart title="Disco — Leitura" seriesList={getList(charts.disk_read)} nodeNames={nodes}
-          colors={NODE_COLORS} fmt={fmtBytes} hoverIdx={hoverIdx} onHover={setHoverIdx}/>
+          colors={NODE_COLORS} fmt={fmtBytes} hoverIdx={hoverIdx} onHover={setHoverIdx} animDelay={0.24}/>
         <Chart title="Disco — Escrita" seriesList={getList(charts.disk_write)} nodeNames={nodes}
-          colors={NODE_COLORS} fmt={fmtBytes} hoverIdx={hoverIdx} onHover={setHoverIdx}/>
+          colors={NODE_COLORS} fmt={fmtBytes} hoverIdx={hoverIdx} onHover={setHoverIdx} animDelay={0.30}/>
       </div>
 
       {/* Global tooltip */}
