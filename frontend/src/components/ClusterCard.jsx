@@ -382,18 +382,28 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
       {showVersions && <EksVersionsPanel currentVersion={cluster.version} key={lang} />}
 
       <div style={{ display: "flex", borderBottom: "1px solid var(--color-border-tertiary)", marginBottom: "1rem" }}>
-        {TAB_KEYS.map(tab => (
-          <button key={tab.id} onClick={() => changeTab(tab.id)} style={{
-            padding: "7px 18px", fontSize: 12, fontWeight: activeTab === tab.id ? 600 : 400,
-            color: activeTab === tab.id ? "var(--color-text-info)" : "var(--color-text-secondary)",
-            background: "none", border: "none", cursor: "pointer",
-            borderBottom: activeTab === tab.id ? "2px solid var(--color-text-info)" : "2px solid transparent",
-            marginBottom: -1,
-            transition: "color 0.2s ease, border-color 0.2s ease, font-weight 0.15s ease",
-          }}>
-            {t(tab.key)}
-          </button>
-        ))}
+        {TAB_KEYS.map(tab => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={isActive ? `${tab.id}-${tabKey}` : tab.id}
+              onClick={() => changeTab(tab.id)}
+              style={{
+                padding: "8px 20px", fontSize: 13, fontWeight: isActive ? 600 : 400,
+                color: isActive ? "var(--color-text-info)" : "var(--color-text-secondary)",
+                background: "none", border: "none", cursor: "pointer",
+                borderBottom: isActive ? "2px solid var(--color-text-info)" : "2px solid transparent",
+                marginBottom: -1,
+                transition: "color 0.22s ease, border-color 0.22s ease",
+                animation: isActive ? "tab-press 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) forwards" : "none",
+                transformOrigin: "center bottom",
+                display: "inline-block",
+              }}
+            >
+              {t(tab.key)}
+            </button>
+          );
+        })}
       </div>
 
       <div key={tabKey} style={{ animation: "tab-fade-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards" }}>
