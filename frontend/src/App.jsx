@@ -42,7 +42,8 @@ function FlagIcon({ code }) {
   return null;
 }
 
-const BG = "radial-gradient(ellipse at 50% 40%, #0a0520 0%, #060610 60%, #03030a 100%)";
+const BG_DARK  = "radial-gradient(ellipse at 50% 40%, #0a0520 0%, #060610 60%, #03030a 100%)";
+const BG_LIGHT = "radial-gradient(ellipse at 50% 0%, #dce8f8 0%, #e8f0fb 50%, #f0f5ff 100%)";
 
 function Stars() {
   const stars = useMemo(() => Array.from({ length: 100 }, (_, i) => ({
@@ -115,8 +116,8 @@ export default function App() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", background: BG }}>
-        <Stars />
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", background: theme === "dark" ? BG_DARK : BG_LIGHT }}>
+        {theme === "dark" && <Stars />}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 24, position: "relative", zIndex: 1 }}>
           <div className="orb-anim" style={{ overflow: "hidden", width: 180, height: 122 }}>
             <img src={spheraLogo} alt="Sphēra" style={{ width: 180, display: "block" }} />
@@ -145,8 +146,8 @@ export default function App() {
   const timeLocale = lang === "pt" ? "pt-BR" : "en-US";
 
   return (
-    <div style={{ minHeight: "100vh", position: "relative", background: BG }}>
-      <Stars />
+    <div style={{ minHeight: "100vh", position: "relative", background: theme === "dark" ? BG_DARK : BG_LIGHT }}>
+      {theme === "dark" && <Stars />}
     <div style={{ padding: "0 2rem", position: "relative", zIndex: 1 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.5rem 0 1rem" }}>
         <Logo size={42} showName />

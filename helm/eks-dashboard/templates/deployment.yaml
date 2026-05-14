@@ -53,12 +53,16 @@ spec:
               value: {{ .Values.clusterName | quote }}
             - name: AWS_DEFAULT_REGION
               value: {{ .Values.awsRegion | quote }}
-            - name: PALANTIR_USERNAME
+            - name: SPHERA_USERNAME
               value: {{ .Values.auth.username | quote }}
-            - name: PALANTIR_PASSWORD
+            - name: SPHERA_PASSWORD
               value: {{ .Values.auth.password | quote }}
             - name: PROMETHEUS_URL
               value: {{ .Values.prometheusUrl | quote }}
+            - name: WEBHOOK_URL
+              value: {{ .Values.notifications.webhookUrl | quote }}
+            - name: WEBHOOK_EOL_THRESHOLD_DAYS
+              value: {{ .Values.notifications.eolThresholdDays | quote }}
             {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

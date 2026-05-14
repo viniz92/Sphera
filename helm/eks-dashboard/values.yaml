@@ -95,6 +95,11 @@ auth:
   username: "admin"
   password: "admin"
 
+# Notificações webhook (Slack/Teams)
+notifications:
+  webhookUrl: ""
+  eolThresholdDays: "90"
+
 extraEnv: []
   # - name: AWS_DEFAULT_REGION
   #   value: us-east-1

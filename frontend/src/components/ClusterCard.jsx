@@ -371,7 +371,18 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
       </div>
 
       {activeTab === "addons" && (addonsLoading
-        ? <div style={{ fontSize: 13, color: "var(--color-text-secondary)", padding: "1rem 0" }}>{t("loadingAddons")}</div>
+        ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 4 }}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0" }}>
+                <div className="skeleton-box" style={{ width: 140, height: 13 }} />
+                <div className="skeleton-box" style={{ width: 60, height: 13 }} />
+                <div className="skeleton-box" style={{ width: 80, height: 13, marginLeft: "auto" }} />
+                <div className="skeleton-box" style={{ width: 100, height: 13 }} />
+              </div>
+            ))}
+          </div>
+        )
         : <AddonTable addons={addons} cluster={cluster} />
       )}
       {activeTab === "nos" && (

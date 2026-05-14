@@ -30,3 +30,7 @@ ingress:
 auth:
   username: "admin"
   password: "admin"
+
+notifications:
+  webhookUrl: ""
+  eolThresholdDays: "90"
