@@ -12,13 +12,13 @@ import { fetchNodeMetrics } from "../api/client";
 
 function MetaCard({ label, value, sub, valueColor, action }) {
   return (
-    <div style={{ background: "var(--color-background-secondary)", borderRadius: "var(--border-radius-md)", padding: "0.75rem 1rem" }}>
-      <div style={{ fontSize: 11, color: "var(--color-text-secondary)", marginBottom: 4 }}>{label}</div>
+    <div style={{ background: "var(--color-background-secondary)", borderRadius: "var(--border-radius-md)", padding: "0.85rem 1rem" }}>
+      <div style={{ fontSize: 12, color: "var(--color-text-secondary)", marginBottom: 5 }}>{label}</div>
       <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-        <div style={{ fontSize: 15, fontWeight: 500, color: valueColor ?? "var(--color-text-primary)" }}>{value}</div>
+        <div style={{ fontSize: 18, fontWeight: 600, color: valueColor ?? "var(--color-text-primary)" }}>{value}</div>
         {action}
       </div>
-      {sub && <div style={{ fontSize: 11, color: "var(--color-text-secondary)", marginTop: 2 }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 12, color: "var(--color-text-secondary)", marginTop: 3 }}>{sub}</div>}
     </div>
   );
 }
@@ -284,16 +284,15 @@ const TAB_KEYS = [
   { id: "monitor",  key: "tabMonitor" },
   { id: "eventos",  key: "tabEvents" },
   { id: "costs",    key: "tabCosts" },
-  { id: "versions", key: "tabVersions" },
 ];
 
 export function ClusterCard({ cluster, addons, addonsLoading }) {
   const { t, lang } = useLanguage();
   const [activeTab, setActiveTab] = useState("addons");
-  const [showUpgrade, setShowUpgrade] = useState(true);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   useEffect(() => {
-    function handler() { setActiveTab("versions"); }
+    function handler() { setShowUpgrade(true); }
     window.addEventListener("sphera:nav-versions", handler);
     return () => window.removeEventListener("sphera:nav-versions", handler);
   }, []);
@@ -320,14 +319,6 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
           }}>
             {t("simulateUpgrade")}
           </button>
-          <button onClick={() => setActiveTab("versions")} style={{
-            fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20,
-            background: activeTab === "versions" ? "rgba(74,127,212,0.18)" : "var(--color-background-secondary)",
-            color: "var(--color-text-info)", border: "0.5px solid var(--color-border-secondary)",
-            cursor: "pointer",
-          }}>
-            {t("eksVersionsBtn")} →
-          </button>
         </div>
       </div>
 
@@ -335,7 +326,7 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
         <MetaCard label={t("currentVersion")} value={cluster.version} sub="Kubernetes" />
         <MetaCard label={t("nextVersion")} value={cluster.next_version} sub="Disponível"
           action={
-            <button onClick={() => setActiveTab("versions")} style={{
+            <button onClick={() => setShowUpgrade(true)} style={{
               fontSize: 10, fontWeight: 600, padding: "2px 9px", borderRadius: 8,
               background: "rgba(74,127,212,0.15)", color: "var(--color-text-info)",
               border: "0.5px solid rgba(74,127,212,0.3)", cursor: "pointer",
@@ -353,7 +344,12 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
       </div>
 
       <EolBar cluster={cluster} />
-      {showUpgrade && <UpgradePath cluster={cluster} />}
+      {showUpgrade && (
+        <>
+          <UpgradePath cluster={cluster} />
+          <EksVersionsPanel currentVersion={cluster.version} key={lang} />
+        </>
+      )}
 
       <div style={{ display: "flex", borderBottom: "1px solid var(--color-border-tertiary)", marginBottom: "1rem" }}>
         {TAB_KEYS.map(tab => (
@@ -383,7 +379,6 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
       {activeTab === "pods"    && <MonitorPanel key={lang} />}
       {activeTab === "eventos" && <EventsPanel key={lang} />}
       {activeTab === "costs"    && <CostsPanel key={lang} />}
-      {activeTab === "versions" && <EksVersionsPanel currentVersion={cluster.version} key={lang} />}
     </div>
   );
 }
