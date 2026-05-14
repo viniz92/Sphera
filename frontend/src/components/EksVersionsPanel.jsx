@@ -7,6 +7,7 @@ const EKS_VERSIONS = [
     releaseDate: "Abr 2023",
     eolDate: "Jul 2024",
     eol: true,
+    docUrl: "https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html#kubernetes-1.27",
     changes: {
       pt: [
         "SecureServing habilitado por padrão no kube-scheduler",
@@ -37,6 +38,7 @@ const EKS_VERSIONS = [
     releaseDate: "Set 2023",
     eolDate: "Nov 2024",
     eol: true,
+    docUrl: "https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html#kubernetes-1.28",
     changes: {
       pt: [
         "Sidecar containers introduzidos como recurso nativo do Kubernetes (alpha → beta)",
@@ -67,6 +69,7 @@ const EKS_VERSIONS = [
     releaseDate: "Jan 2024",
     eolDate: "Mar 2025",
     eol: true,
+    docUrl: "https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html#kubernetes-1.29",
     changes: {
       pt: [
         "ReadWriteOncePod para PersistentVolumes agora estável",
@@ -97,6 +100,7 @@ const EKS_VERSIONS = [
     releaseDate: "Mai 2024",
     eolDate: "Jul 2025",
     eol: true,
+    docUrl: "https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html#kubernetes-1.30",
     changes: {
       pt: [
         "Suporte a AppArmor agora estável (removido da feature gate)",
@@ -127,6 +131,7 @@ const EKS_VERSIONS = [
     releaseDate: "Set 2024",
     eolDate: "Nov 2025",
     eol: true,
+    docUrl: "https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html#kubernetes-1.31",
     changes: {
       pt: [
         "Sidecar containers agora estável",
@@ -157,6 +162,7 @@ const EKS_VERSIONS = [
     releaseDate: "Jan 2025",
     eolDate: "Mar 2026",
     eol: true,
+    docUrl: "https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html#kubernetes-1.32",
     changes: {
       pt: [
         "Roteamento topológico (Topology Aware Routing) agora estável",
@@ -187,6 +193,7 @@ const EKS_VERSIONS = [
     releaseDate: "Abr 2025",
     eolDate: "Jul 2026",
     eol: false,
+    docUrl: "https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html#kubernetes-1.33",
     changes: {
       pt: [
         "Redimensionamento de pods in-place agora estável — altera CPU/memória sem reiniciar",
@@ -217,6 +224,7 @@ const EKS_VERSIONS = [
     releaseDate: "Set 2025",
     eolDate: "Nov 2026",
     eol: false,
+    docUrl: "https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html#kubernetes-1.34",
     changes: {
       pt: [
         "Melhorias no Dynamic Resource Allocation (DRA) — suporte a particionamento de dispositivos",
@@ -320,6 +328,18 @@ export function EksVersionsPanel({ currentVersion }) {
                 </li>
               ))}
             </ul>
+            <div style={{ marginTop: 10 }}>
+              <a href={v.docUrl} target="_blank" rel="noopener noreferrer" style={{
+                fontSize: 11, color: "var(--color-text-info)",
+                textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4,
+              }}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                AWS Docs
+              </a>
+            </div>
           </div>
         );
       })}

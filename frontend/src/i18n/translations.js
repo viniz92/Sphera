@@ -112,6 +112,7 @@ export const translations = {
     podRecentEvents: "Eventos recentes",
     podDetailsBtn: "Detalhes",
     eksVersionsBtn: "Versões",
+    newEksVersionAvailable: "Nova versão disponível:",
   },
 
   en: {
@@ -215,6 +216,7 @@ export const translations = {
     podRecentEvents: "Recent events",
     podDetailsBtn: "Details",
     eksVersionsBtn: "Versions",
+    newEksVersionAvailable: "New version available:",
     // Pods (Monitor tab)
     loadingPods: "Loading pods...",
     errorPods: "Error loading pods",
@@ -311,6 +313,7 @@ export const translations = {
     podRecentEvents: "Eventos recientes",
     podDetailsBtn: "Detalles",
     eksVersionsBtn: "Versiones",
+    newEksVersionAvailable: "Nueva versión disponible:",
     loadingPods: "Cargando pods...",
     errorPods: "Error al cargar pods",
     noPods: "No se encontraron pods.",

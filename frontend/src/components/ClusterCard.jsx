@@ -10,11 +10,14 @@ import { MonitorDashboard } from "./MonitorDashboard";
 import { useLanguage } from "../context/LanguageContext";
 import { fetchNodeMetrics } from "../api/client";
 
-function MetaCard({ label, value, sub, valueColor }) {
+function MetaCard({ label, value, sub, valueColor, action }) {
   return (
     <div style={{ background: "var(--color-background-secondary)", borderRadius: "var(--border-radius-md)", padding: "0.75rem 1rem" }}>
       <div style={{ fontSize: 11, color: "var(--color-text-secondary)", marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 15, fontWeight: 500, color: valueColor ?? "var(--color-text-primary)" }}>{value}</div>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+        <div style={{ fontSize: 15, fontWeight: 500, color: valueColor ?? "var(--color-text-primary)" }}>{value}</div>
+        {action}
+      </div>
       {sub && <div style={{ fontSize: 11, color: "var(--color-text-secondary)", marginTop: 2 }}>{sub}</div>}
     </div>
   );
@@ -287,6 +290,12 @@ const TAB_KEYS = [
 export function ClusterCard({ cluster, addons, addonsLoading }) {
   const { t, lang } = useLanguage();
   const [activeTab, setActiveTab] = useState("addons");
+
+  useEffect(() => {
+    function handler() { setActiveTab("versions"); }
+    window.addEventListener("sphera:nav-versions", handler);
+    return () => window.removeEventListener("sphera:nav-versions", handler);
+  }, []);
   const days = cluster.eol_days_remaining;
   const eolBadgeColor = days < 60 ? "var(--color-text-danger)" : days < 180 ? "var(--color-text-warning)" : "var(--color-text-success)";
   const eolBadgeBg   = days < 60 ? "var(--color-background-danger)" : days < 180 ? "var(--color-background-warning)" : "var(--color-background-success)";
@@ -315,7 +324,17 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10, marginBottom: "1.25rem" }}>
         <MetaCard label={t("currentVersion")} value={cluster.version} sub="Kubernetes" />
-        <MetaCard label={t("nextVersion")} value={cluster.next_version} sub="Disponível" />
+        <MetaCard label={t("nextVersion")} value={cluster.next_version} sub="Disponível"
+          action={
+            <button onClick={() => setActiveTab("versions")} style={{
+              fontSize: 10, fontWeight: 600, padding: "1px 7px", borderRadius: 8,
+              background: "rgba(74,127,212,0.15)", color: "var(--color-text-info)",
+              border: "0.5px solid rgba(74,127,212,0.3)", cursor: "pointer",
+            }}>
+              details
+            </button>
+          }
+        />
         <MetaCard label={t("endOfSupport")} value={cluster.eol_date ?? "—"}
           sub={`${t("supportLabel")} · ${days < 60 ? `${days} dias` : `${days} dias · ~${Math.round(days / 30)} meses`}`}
           valueColor={eolBadgeColor} />

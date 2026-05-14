@@ -52,7 +52,7 @@ function useTheme() {
 
 export default function App() {
   const [token, setToken] = useState(() => localStorage.getItem("sphera_token") || "");
-  const { cluster, loading, refreshing, error, refresh, lastUpdated } = useCluster(!!token);
+  const { cluster, loading, refreshing, error, refresh, lastUpdated, newVersionNotif, dismissNotif } = useCluster(!!token);
   const { addons, loading: addonsLoading, reload: reloadAddons } = useAddons(!!cluster);
   const [theme, toggleTheme] = useTheme();
   const { lang, setLanguage, t } = useLanguage();
@@ -114,7 +114,7 @@ export default function App() {
   return (
     <div style={{ padding: "0 2rem" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.5rem 0 1rem" }}>
-        <Logo size={32} showName />
+        <Logo size={42} showName />
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {lastUpdated && (
             <span style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>
@@ -173,6 +173,30 @@ export default function App() {
           </button>
         </div>
       </div>
+          {newVersionNotif && (
+            <div style={{
+              display: "flex", alignItems: "center", gap: 10,
+              background: "rgba(74,127,212,0.12)",
+              border: "0.5px solid rgba(74,127,212,0.35)",
+              borderRadius: "var(--border-radius-md)",
+              padding: "9px 14px", marginBottom: "0.75rem",
+            }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-info)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <span style={{ fontSize: 12, color: "var(--color-text-info)", flex: 1 }}>
+                {t("newEksVersionAvailable")} <strong>EKS {newVersionNotif.version}</strong>
+              </span>
+              <button onClick={() => { window.dispatchEvent(new Event("sphera:nav-versions")); dismissNotif(); }} style={{
+                fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 10,
+                background: "rgba(74,127,212,0.2)", color: "var(--color-text-info)",
+                border: "0.5px solid rgba(74,127,212,0.4)", cursor: "pointer",
+              }}>
+                {t("eksVersionsBtn")} →
+              </button>
+              <button onClick={dismissNotif} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-text-tertiary)", fontSize: 16, lineHeight: 1, padding: "0 2px" }}>✕</button>
+            </div>
+          )}
       <ClusterCard cluster={cluster} addons={addons} addonsLoading={addonsLoading} />
     </div>
   );
