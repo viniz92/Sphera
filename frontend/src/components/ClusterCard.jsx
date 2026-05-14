@@ -333,7 +333,7 @@ export function ClusterCard({ cluster, addons, addonsLoading }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10, marginBottom: "1.25rem" }}>
         <MetaCard label={t("currentVersion")} value={cluster.version} sub="Kubernetes" />
-        <MetaCard label={t("nextVersion")} value={cluster.next_version} sub="Disponível"
+        <MetaCard label={t("nextVersion")} value={cluster.next_version} sub={t("available")}
           action={
             <button onClick={() => setShowVersions(true)} style={{
               fontSize: 10, fontWeight: 600, padding: "2px 9px", borderRadius: 8,

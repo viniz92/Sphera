@@ -22,6 +22,7 @@ export const translations = {
     // ClusterCard meta
     currentVersion: "Versão atual",
     nextVersion: "Próxima versão",
+    available: "Disponível",
     endOfSupport: "Fim do suporte",
     supportLabel: "Suporte padrão (free)",
     region: "Região",
@@ -138,6 +139,7 @@ export const translations = {
     // ClusterCard meta
     currentVersion: "Current version",
     nextVersion: "Next version",
+    available: "Available",
     endOfSupport: "End of support",
     supportLabel: "Standard support (free)",
     region: "Region",
@@ -249,6 +251,7 @@ export const translations = {
     tabVersions: "Versiones EKS",
     currentVersion: "Versión actual",
     nextVersion: "Próxima versión",
+    available: "Disponible",
     endOfSupport: "Fin del soporte",
     supportLabel: "Soporte estándar (gratis)",
     region: "Región",
